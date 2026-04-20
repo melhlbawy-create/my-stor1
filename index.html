@@ -128,13 +128,14 @@
             console.log("البيانات الجاهزة للإرسال:", orderData);
             
             //https://script.google.com/macros/s/AKfycbyiUgX2GW6tF8KcXf7jzKp37p8-kuan8Ga7Okzr4qhV28G3xXQiOwROOCBgPZi01zbb/exec
-        }// إرسال البيانات الفعلية لجوجل شيت
-            fetch('https://script.google.com/macros/s/AKfycbz.../exec', {
+        }// // إرسال البيانات الفعلية لجوجل شيت
+            fetch('https://script.google.com/macros/s/AKfycbyiUgX2Gw6tF8KcXf7jzkp37p8-kuan8Ga70kzr4qhV28G3xXQiOwR0OCBgPZi01zbb/exec', {
                 method: 'POST',
                 mode: 'no-cors',
                 body: JSON.stringify(orderData)
             }).then(() => {
                 alert("تم إرسال طلبك بنجاح يا " + orderData.student_name + "\nرقم الطلب: " + orderRef);
+            });
             });
     </script>
 </body>
