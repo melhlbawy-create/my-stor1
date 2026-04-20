@@ -7,18 +7,20 @@
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@fingerprintjs/fingerprintjs@3/dist/fp.min.js"></script>
     <style>
-        body { font-family: sans-serif; background-color: #f4f4f9; padding: 20px; color: #333; }
-        .container { max-width: 500px; margin: auto; background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-        h2 { text-align: center; color: #2c3e50; }
-        .user-info { background: #e8f4fd; padding: 10px; border-radius: 10px; margin-bottom: 20px; font-size: 0.9em; }
-        .subject-item { display: flex; justify-content: space-between; align-items: center; padding: 12px; border-bottom: 1px solid #eee; transition: 0.3s; }
-        .subject-item:hover { background: #f9f9f9; }
-        .subject-item label { flex-grow: 1; cursor: pointer; }
-        .price { color: #27ae60; font-weight: bold; margin-left: 10px; }
-        .footer { margin-top: 25px; text-align: center; border-top: 2px solid #eee; padding-top: 15px; }
-        #total-price { font-size: 1.2em; font-weight: bold; color: #e74c3c; }
-        button { background: #3498db; color: white; border: none; padding: 12px 25px; border-radius: 8px; cursor: pointer; width: 100%; font-size: 1.1em; margin-top: 15px; transition: 0.3s; }
-        button:hover { background: #2980b9; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f2f5; padding: 15px; color: #333; }
+        .container { max-width: 450px; margin: auto; background: white; padding: 25px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
+        h2 { text-align: center; color: #1a73e8; margin-bottom: 20px; }
+        .user-info { background: #f8f9fa; padding: 12px; border-radius: 12px; margin-bottom: 20px; border-right: 5px solid #1a73e8; font-size: 0.95em; }
+        .selection-group { margin-bottom: 20px; }
+        .selection-group label { display: block; margin-bottom: 8px; font-weight: bold; color: #555; }
+        select { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #ddd; background: #fff; font-size: 1em; outline: none; }
+        .subject-item { display: flex; justify-content: space-between; align-items: center; padding: 12px; border-bottom: 1px solid #eee; }
+        .subject-item:last-child { border-bottom: none; }
+        .price { color: #28a745; font-weight: bold; }
+        .footer { margin-top: 30px; text-align: center; background: #fff; padding-top: 20px; border-top: 2px dashed #eee; }
+        #total-price { font-size: 1.4em; font-weight: bold; color: #d93025; }
+        button { background: #1a73e8; color: white; border: none; padding: 15px; border-radius: 12px; cursor: pointer; width: 100%; font-size: 1.2em; font-weight: bold; margin-top: 15px; box-shadow: 0 4px 6px rgba(26,115,232,0.3); transition: 0.2s; }
+        button:active { transform: scale(0.98); }
     </style>
 </head>
 <body>
@@ -27,16 +29,27 @@
     <h2>الكبسولة التعليمية</h2>
     
     <div class="user-info">
-        اهلا بك: <span id="user-name">طالب كبسولة</span><br>
-        رقم الطلب: <span id="order-ref">...</span>
+        <b>الطالب:</b> <span id="user-name">زائر الكبسولة</span><br>
+        <b>رقم الطلب:</b> <span id="order-ref">...</span>
     </div>
 
-    <div id="subjects-list">
-        </div>
+    <div class="selection-group">
+        <label>اختر المرحلة الدراسية:</label>
+        <select id="grade-level">
+            <option value="ابتدائي">المرحلة الابتدائية</option>
+            <option value="إعدادي">المرحلة الإعدادية</option>
+            <option value="ثانوي">المرحلة الثانوية</option>
+        </select>
+    </div>
+
+    <div class="selection-group">
+        <label>اختر المواد المطلوبة:</label>
+        <div id="subjects-list"></div>
+    </div>
 
     <div class="footer">
-        <div>الإجمالي: <span id="total-price">0</span> ج.م</div>
-        <button onclick="processOrder()">تأكيد وطلب الآن</button>
+        <div>إجمالي المبلغ: <span id="total-price">0</span> ج.م</div>
+        <button onclick="processOrder()">تأكيد وإرسال الطلب</button>
     </div>
 </div>
 
@@ -49,74 +62,66 @@
         document.getElementById('user-name').innerText = user.first_name + (user.last_name ? " " + user.last_name : "");
     }
 
-    const orderRef = "CAP-" + Math.floor(Math.random() * 1000000);
+    const orderRef = "CAP-" + Math.floor(100000 + Math.random() * 900000);
     document.getElementById('order-ref').innerText = orderRef;
 
-    const subjects = ["اللغة العربية", "اللغة الإنجليزية", "الرياضيات", "العلوم", "الدراسات الاجتماعية", "الحاسب الآلي"];
+    const subjects = ["اللغة العربية", "اللغة الإنجليزية", "الرياضيات", "العلوم", "الدراسات", "الحاسب الآلي"];
     const itemPrice = 20;
     let selectedSubjects = [];
 
-    const subjectsList = document.getElementById('subjects-list');
+    const listDiv = document.getElementById('subjects-list');
     subjects.forEach(sub => {
-        const div = document.createElement('div');
-        div.className = 'subject-item';
-        div.innerHTML = `
-            <label for="${sub}">${sub}</label>
+        const d = document.createElement('div');
+        d.className = 'subject-item';
+        d.innerHTML = `
+            <label><input type="checkbox" onchange="toggle('${sub}')"> ${sub}</label>
             <span class="price">${itemPrice} ج</span>
-            <input type="checkbox" id="${sub}" value="${sub}" onchange="toggleSubject('${sub}')">
         `;
-        subjectsList.appendChild(div);
+        listDiv.appendChild(d);
     });
 
-    function toggleSubject(sub) {
-        if (selectedSubjects.includes(sub)) {
-            selectedSubjects = selectedSubjects.filter(item => item !== sub);
-        } else {
-            selectedSubjects.push(sub);
-        }
+    function toggle(sub) {
+        if (selectedSubjects.includes(sub)) selectedSubjects = selectedSubjects.filter(i => i !== sub);
+        else selectedSubjects.push(sub);
         document.getElementById('total-price').innerText = selectedSubjects.length * itemPrice;
     }
 
     async function processOrder() {
         if (selectedSubjects.length === 0) {
-            alert("من فضلك اختر مادة واحدة على الأقل");
+            alert("برجاء اختيار مادة واحدة على الأقل");
             return;
         }
 
-        alert("جاري إرسال طلبك للجدول... انتظر لحظة");
+        alert("جاري تسجيل طلبك في النظام...");
 
-        // سحب بصمة الجهاز
-        let visitorId = "Unknown";
+        let vId = "غير معروف";
         try {
             const fp = await FingerprintJS.load();
-            const result = await fp.get();
-            visitorId = result.visitorId;
-        } catch (e) { console.log("FP Error", e); }
+            const res = await fp.get();
+            vId = res.visitorId;
+        } catch(e) {}
 
-        const orderData = {
+        const data = {
             order_id: orderRef,
             student_name: document.getElementById('user-name').innerText,
-            telegram_id: user?.id || "Unknown",
+            grade_level: document.getElementById('grade-level').value,
+            telegram_id: user?.id || "N/A",
             subjects: selectedSubjects.join(" - "),
             total_amount: selectedSubjects.length * itemPrice,
-            browser_fingerprint: visitorId,
-            timestamp: new Date().toLocaleString('ar-EG')
+            fingerprint: vId,
+            date: new Date().toLocaleString('ar-EG')
         };
 
-        const googleScriptUrl = 'https://script.google.com/macros/s/AKfycbzSamBCGq3ZF2RgP5ZeSct1ZusH_4F7Q7RkrOcI9pRLgxDDVz3W4fdaA8XqHlum3asu/exec';
+        const url = 'https://script.google.com/macros/s/AKfycbzSamBCGq3ZF2RgP5ZeSct1ZusH_4F7Q7RkrOcI9pRLgxDDVz3W4fdaA8XqHlum3asu/exec';
 
-        fetch(googleScriptUrl, {
+        fetch(url, {
             method: 'POST',
             mode: 'no-cors',
-            cache: 'no-cache',
-            body: JSON.stringify(orderData)
+            body: JSON.stringify(data)
         }).then(() => {
-            alert("تم إرسال طلبك بنجاح يا " + orderData.student_name + "\nرقم الطلب: " + orderRef + "\nسيتم التواصل معك فوراً.");
-        }).catch(err => {
-            alert("عذراً، حدث خطأ في الاتصال: " + err);
-        });
+            alert("تم الإرسال بنجاح يا " + data.student_name + "\nرقم طلبك هو: " + orderRef);
+        }).catch(e => alert("حدث خطأ: " + e));
     }
 </script>
-
 </body>
 </html>
