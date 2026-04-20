@@ -4,138 +4,119 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>متجر الكبسولة التعليمية</title>
-    <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <script src="https://openfpcdn.io/fingerprintjs/v4"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@fingerprintjs/fingerprintjs@3/dist/fp.min.js"></script>
     <style>
-        body { background-color: #f3f4f6; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        .card-active { border: 2px solid #2563eb; background-color: #eff6ff; }
+        body { font-family: sans-serif; background-color: #f4f4f9; padding: 20px; color: #333; }
+        .container { max-width: 500px; margin: auto; background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        h2 { text-align: center; color: #2c3e50; }
+        .user-info { background: #e8f4fd; padding: 10px; border-radius: 10px; margin-bottom: 20px; font-size: 0.9em; }
+        .subject-item { display: flex; justify-content: space-between; align-items: center; padding: 12px; border-bottom: 1px solid #eee; transition: 0.3s; }
+        .subject-item:hover { background: #f9f9f9; }
+        .subject-item label { flex-grow: 1; cursor: pointer; }
+        .price { color: #27ae60; font-weight: bold; margin-left: 10px; }
+        .footer { margin-top: 25px; text-align: center; border-top: 2px solid #eee; padding-top: 15px; }
+        #total-price { font-size: 1.2em; font-weight: bold; color: #e74c3c; }
+        button { background: #3498db; color: white; border: none; padding: 12px 25px; border-radius: 8px; cursor: pointer; width: 100%; font-size: 1.1em; margin-top: 15px; transition: 0.3s; }
+        button:hover { background: #2980b9; }
     </style>
 </head>
-<body class="p-4">
+<body>
 
-    <div class="text-center mb-6">
-        <h1 class="text-2xl font-bold text-blue-800">كبسولة تعليمية 🎓</h1>
-        <p class="text-gray-600 text-sm">اختر موادك وحمل كبسولتك فوراً</p>
+<div class="container">
+    <h2>الكبسولة التعليمية</h2>
+    
+    <div class="user-info">
+        اهلا بك: <span id="user-name">طالب كبسولة</span><br>
+        رقم الطلب: <span id="order-ref">...</span>
     </div>
 
-    <div id="student-info" class="bg-white p-3 rounded-lg shadow-sm mb-4 text-sm border-r-4 border-blue-500">
-        <p>مرحباً: <span id="user-name" class="font-bold">جاري التحميل...</span></p>
-        <p>رقم الطلب: <span id="order-ref" class="text-blue-600 font-mono"></span></p>
-    </div>
-
-    <div class="mb-4">
-        <label class="block font-bold mb-2 text-gray-700">المرحلة الدراسية:</label>
-        <select id="level" class="w-full p-2 rounded-lg border shadow-sm" onchange="updateClasses()">
-            <option value="">اختر المرحلة</option>
-            <option value="primary">ابتدائية</option>
-            <option value="middle">إعدادية</option>
-            <option value="secondary">ثانوية</option>
-        </select>
-    </div>
-
-    <div id="subjects-container" class="grid grid-cols-2 gap-3 mb-20">
+    <div id="subjects-list">
         </div>
 
-    <div class="fixed bottom-0 left-0 right-0 bg-white p-4 shadow-lg border-t flex justify-between items-center">
-        <div>
-            <p class="text-xs text-gray-500">الإجمالي:</p>
-            <p class="text-xl font-bold text-green-600"><span id="total-price">0</span> ج.م</p>
-        </div>
-        <button onclick="processOrder()" id="pay-btn" class="bg-blue-600 text-white px-8 py-2 rounded-full font-bold shadow-md active:scale-95 transition-all">
-            تأكيد وطلب
-        </button>
+    <div class="footer">
+        <div>الإجمالي: <span id="total-price">0</span> ج.م</div>
+        <button onclick="processOrder()">تأكيد وطلب الآن</button>
     </div>
+</div>
 
-    <script>
-        const tg = window.Telegram.WebApp;
-        tg.expand(); // فتح الميني آب بكامل الشاشة
+<script>
+    const tg = window.Telegram.WebApp;
+    tg.expand();
 
-        let selectedSubjects = [];
-        const itemPrice = 20;
+    const user = tg.initDataUnsafe?.user;
+    if (user) {
+        document.getElementById('user-name').innerText = user.first_name + (user.last_name ? " " + user.last_name : "");
+    }
 
-        // 1. توليد رقم مرجعي وتاريخ وتوقيت
-        const orderRef = "CAP-" + Math.floor(Math.random() * 1000000);
-        document.getElementById('order-ref').innerText = orderRef;
+    const orderRef = "CAP-" + Math.floor(Math.random() * 1000000);
+    document.getElementById('order-ref').innerText = orderRef;
 
-        // 2. جلب بيانات التليجرام
-        const user = tg.initDataUnsafe?.user;
-        if(user) {
-            document.getElementById('user-name').innerText = user.first_name + (user.last_name ? " " + user.last_name : "");
+    const subjects = ["اللغة العربية", "اللغة الإنجليزية", "الرياضيات", "العلوم", "الدراسات الاجتماعية", "الحاسب الآلي"];
+    const itemPrice = 20;
+    let selectedSubjects = [];
+
+    const subjectsList = document.getElementById('subjects-list');
+    subjects.forEach(sub => {
+        const div = document.createElement('div');
+        div.className = 'subject-item';
+        div.innerHTML = `
+            <label for="${sub}">${sub}</label>
+            <span class="price">${itemPrice} ج</span>
+            <input type="checkbox" id="${sub}" value="${sub}" onchange="toggleSubject('${sub}')">
+        `;
+        subjectsList.appendChild(div);
+    });
+
+    function toggleSubject(sub) {
+        if (selectedSubjects.includes(sub)) {
+            selectedSubjects = selectedSubjects.filter(item => item !== sub);
+        } else {
+            selectedSubjects.push(sub);
         }
-
-        // 3. قاعدة بيانات المواد البسيطة
-        const database = {
-            primary: ["لغة عربية", "رياضيات", "علوم", "دراسات"],
-            middle: ["جبر", "هندسة", "إنجليزي", "علوم"],
-            secondary: ["فيزياء", "كيمياء", "أحياء", "فلسفة"]
-        };
-
-        function updateClasses() {
-            const level = document.getElementById('level').value;
-            const container = document.getElementById('subjects-container');
-            container.innerHTML = "";
-            selectedSubjects = [];
-            updateTotal();
-
-            if(database[level]) {
-                database[level].forEach(sub => {
-                    const div = document.createElement('div');
-                    div.className = "bg-white p-4 rounded-xl shadow-sm text-center border-2 border-transparent cursor-pointer transition-all";
-                    div.innerHTML = `<p class="font-bold">${sub}</p><p class="text-blue-500 text-sm">20 ج</p>`;
-                    div.onclick = function() {
-                        this.classList.toggle('card-active');
-                        if(selectedSubjects.includes(sub)) {
-                            selectedSubjects = selectedSubjects.filter(i => i !== sub);
-                        } else {
-                            selectedSubjects.push(sub);
-                        }
-                        updateTotal();
-                    };
-                    container.appendChild(div);
-                });
-            }
-        }
-
-        function updateTotal() {
-            const total = selectedSubjects.length * itemPrice;
-            document.getElementById('total-price').innerText = total;
-        }
+        document.getElementById('total-price').innerText = selectedSubjects.length * itemPrice;
+    }
 
     async function processOrder() {
-            if(selectedSubjects.length === 0) {
-                alert("من فضلك اختر مادة واحدة على الأقل");
-                return;
-            }
+        if (selectedSubjects.length === 0) {
+            alert("من فضلك اختر مادة واحدة على الأقل");
+            return;
+        }
 
-            // سحب بصمة الجهاز
+        alert("جاري إرسال طلبك للجدول... انتظر لحظة");
+
+        // سحب بصمة الجهاز
+        let visitorId = "Unknown";
+        try {
             const fp = await FingerprintJS.load();
             const result = await fp.get();
-            const visitorId = result.visitorId;
+            visitorId = result.visitorId;
+        } catch (e) { console.log("FP Error", e); }
 
-            // تجميع البيانات النهائية
-            const orderData = {
-                order_id: orderRef,
-                student_name: document.getElementById('user-name').innerText,
-                telegram_id: user?.id || "Unknown",
-                subjects: selectedSubjects.join(" - "),
-                total_amount: selectedSubjects.length * itemPrice,
-                browser_fingerprint: visitorId,
-                timestamp: new Date().toLocaleString('ar-EG'),
-                device_info: navigator.userAgent
-            };
+        const orderData = {
+            order_id: orderRef,
+            student_name: document.getElementById('user-name').innerText,
+            telegram_id: user?.id || "Unknown",
+            subjects: selectedSubjects.join(" - "),
+            total_amount: selectedSubjects.length * itemPrice,
+            browser_fingerprint: visitorId,
+            timestamp: new Date().toLocaleString('ar-EG')
+        };
 
-            console.log("البيانات الجاهزة للإرسال:", orderData);
-            
-            // إرسال البيانات الفعلية لجوجل شيت
-            fetch('https://script.google.com/macros/s/AKfycbyiUgX2Gw6tF8KcXf7jzkp37p8-kuan8Ga70kzr4qhV28G3xXQiOwR0OCBgPZi01zbb/exec', {
-                method: 'POST',
-                mode: 'no-cors',
-                body: JSON.stringify(orderData)
-            }).then(() => {
-                alert("تم إرسال طلبك بنجاح يا " + orderData.student_name + "\nرقم الطلب: " + orderRef);
-            });
-        }
-    </script>
+        const googleScriptUrl = 'https://script.google.com/macros/s/AKfycbzSamBCGq3ZF2RgP5ZeSct1ZusH_4F7Q7RkrOcI9pRLgxDDVz3W4fdaA8XqHlum3asu/exec';
+
+        fetch(googleScriptUrl, {
+            method: 'POST',
+            mode: 'no-cors',
+            cache: 'no-cache',
+            body: JSON.stringify(orderData)
+        }).then(() => {
+            alert("تم إرسال طلبك بنجاح يا " + orderData.student_name + "\nرقم الطلب: " + orderRef + "\nسيتم التواصل معك فوراً.");
+        }).catch(err => {
+            alert("عذراً، حدث خطأ في الاتصال: " + err);
+        });
+    }
+</script>
+
 </body>
 </html>
