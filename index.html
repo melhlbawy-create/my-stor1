@@ -127,9 +127,15 @@
 
             console.log("البيانات الجاهزة للإرسال:", orderData);
             
-            // هنا هنحط رابط الجوجل سكريبت في المرحلة الجاية
-            alert("تم تجهيز الطلب رقم: " + orderRef + "\nبإجمالي: " + orderData.total_amount + " ج.م\nسيتم توجيهك للدفع...");
-        }
+            //https://script.google.com/macros/s/AKfycbyiUgX2GW6tF8KcXf7jzKp37p8-kuan8Ga7Okzr4qhV28G3xXQiOwROOCBgPZi01zbb/exec
+        }// إرسال البيانات الفعلية لجوجل شيت
+            fetch('https://script.google.com/macros/s/AKfycbz.../exec', {
+                method: 'POST',
+                mode: 'no-cors',
+                body: JSON.stringify(orderData)
+            }).then(() => {
+                alert("تم إرسال طلبك بنجاح يا " + orderData.student_name + "\nرقم الطلب: " + orderRef);
+            });
     </script>
 </body>
 </html>
