@@ -3,87 +3,218 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>الكبسولة التعليمية</title>
+    <title>متجر الكبسولة التعليمية</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@fingerprintjs/fingerprintjs@3/dist/fp.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        body { font-family: 'Segoe UI', sans-serif; background-color: #f0f2f5; padding: 15px; text-align: center; }
-        .container { max-width: 400px; margin: auto; background: white; padding: 20px; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
-        .info { background: #e8f0fe; padding: 10px; border-radius: 10px; margin-bottom: 15px; font-size: 14px; }
-        select, button { width: 100%; padding: 12px; margin: 10px 0; border-radius: 8px; border: 1px solid #ddd; font-size: 16px; }
-        button { background: #1a73e8; color: white; border: none; font-weight: bold; cursor: pointer; }
-        .subject { display: flex; justify-content: space-between; padding: 8px; border-bottom: 1px solid #eee; }
+        :root {
+            --primary-blue: #1a237e;
+            --royal-blue: #0d47a1;
+            --glow-green: #00ff88;
+            --glow-red: #ff3d00;
+            --glass-bg: rgba(255, 255, 255, 0.1);
+        }
+
+        body {
+            background-color: var(--primary-blue);
+            background-image: 
+                linear-gradient(135deg, var(--royal-blue) 0%, #1a237e 100%),
+                radial-gradient(circle at 20% 20%, rgba(255,255,255,0.05) 0%, transparent 20%),
+                radial-gradient(circle at 80% 80%, rgba(255,255,255,0.05) 0%, transparent 20%);
+            background-attachment: fixed;
+            font-family: 'Segoe UI', Tahoma, sans-serif;
+            color: white;
+            display: flex;
+            justify-content: center;
+            padding: 20px;
+            margin: 0;
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 25px;
+            padding: 30px;
+            width: 100%;
+            max-width: 450px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5), inset 0 0 20px rgba(255,255,255,0.05);
+        }
+
+        h2 { text-align: center; text-shadow: 0 0 10px var(--glow-green); margin-bottom: 25px; font-size: 24px; }
+
+        .neo-inset {
+            background: rgba(0,0,0,0.2);
+            border-radius: 15px;
+            padding: 15px;
+            margin-bottom: 20px;
+            box-shadow: inset 4px 4px 10px rgba(0,0,0,0.3), inset -2px -2px 5px rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .order-id-box { color: var(--glow-red); font-weight: bold; font-family: monospace; font-size: 1.2em; text-shadow: 0 0 8px var(--glow-red); }
+
+        select {
+            width: 100%; padding: 12px; border-radius: 12px; border: none;
+            background: #0d47a1; color: white; font-weight: bold;
+            box-shadow: 4px 4px 8px rgba(0,0,0,0.3); outline: none;
+        }
+
+        .subject-card {
+            display: flex; align-items: center; justify-content: space-between;
+            background: rgba(255,255,255,0.05); border-radius: 12px;
+            padding: 12px 18px; margin-bottom: 12px; cursor: pointer;
+            transition: 0.3s; border: 1px solid transparent;
+        }
+
+        .subject-card:hover { background: rgba(255,255,255,0.1); transform: translateY(-2px); }
+
+        .subject-card.active {
+            border-color: var(--glow-green);
+            box-shadow: 0 0 15px rgba(0, 255, 136, 0.3);
+            background: rgba(0, 255, 136, 0.1);
+        }
+
+        .icon-box { width: 35px; height: 35px; display: flex; align-items: center; justify-content: center; font-size: 1.2em; margin-left: 15px; color: #bbdefb; }
+
+        .custom-check {
+            width: 22px; height: 22px; border: 2px solid #555; border-radius: 5px;
+            display: flex; align-items: center; justify-content: center; transition: 0.3s;
+        }
+
+        .active .custom-check { background: var(--glow-green); border-color: var(--glow-green); box-shadow: 0 0 10px var(--glow-green); }
+        .active .custom-check::after { content: "✔"; color: #000; font-size: 14px; font-weight: bold; }
+
+        .total-box {
+            font-size: 1.3em; text-align: center; margin-top: 20px;
+            padding: 15px; background: rgba(0,0,0,0.2); border-radius: 15px;
+            color: var(--glow-green); text-shadow: 0 0 10px var(--glow-green);
+            border: 1px solid rgba(0, 255, 136, 0.2);
+        }
+
+        .btn-send {
+            width: 100%; padding: 18px; margin-top: 20px; border-radius: 15px; border: none;
+            background: linear-gradient(145deg, #0d47a1, #1a237e); color: white;
+            font-size: 1.2em; font-weight: bold; cursor: pointer;
+            box-shadow: 6px 6px 12px rgba(0,0,0,0.4), -2px -2px 8px rgba(255,255,255,0.05);
+            transition: 0.3s;
+        }
+
+        .btn-send:active { box-shadow: inset 4px 4px 10px rgba(0,0,0,0.5); transform: scale(0.98); }
     </style>
 </head>
 <body>
-<div class="container">
-    <h3>🎓 الكبسولة التعليمية</h3>
-    <div class="info">
-        اهلا بك: <span id="user-name">طالب الكبسولة</span><br>
-        رقم الطلب: <span id="order-ref" style="font-weight:bold; color:red;">A-000000</span>
-    </div>
-    
-    <label>اختر المرحلة:</label>
-    <select id="grade" onchange="updateRef()">
-        <option value="ابتدائي">المرحلة الابتدائية (A)</option>
-        <option value="إعدادي">المرحلة الإعدادية (B)</option>
-        <option value="ثانوي">المرحلة الثانوية (C)</option>
-    </select>
 
-    <div id="list"></div>
-    <div style="margin-top:15px; font-weight:bold;">الإجمالي: <span id="total">0</span> ج.م</div>
-    <button onclick="send()">تأكيد وإرسال الطلب</button>
+<div class="glass-card">
+    <h2>🚀 كبسولة التعليم الذكية</h2>
+
+    <div class="neo-inset">
+        <div><i class="fa-solid fa-user-graduate"></i> الطالب: <span id="user-name">...</span></div>
+        <div style="margin-top:10px;"><i class="fa-solid fa-hashtag"></i> الكود: <span id="order-ref" class="order-id-box">A-000000</span></div>
+    </div>
+
+    <div class="selection-group">
+        <label style="display:block; margin-bottom:10px;">🎓 اختر المرحلة الدراسية:</label>
+        <select id="grade-level" onchange="updateRef()">
+            <option value="ابتدائي">المرحلة الابتدائية (A)</option>
+            <option value="إعدادي">المرحلة الإعدادية (B)</option>
+            <option value="ثانوي">المرحلة الثانوية (C)</option>
+        </select>
+    </div>
+
+    <div style="margin-top:20px;">
+        <label style="display:block; margin-bottom:15px;">📚 حدد المواد المطلوبة:</label>
+        <div id="subjects-container"></div>
+    </div>
+
+    <div class="total-box">
+        إجمالي الاستثمار: <span id="total-price">0</span> ج.م
+    </div>
+
+    <button class="btn-send" onclick="processOrder()">تأكيد وإرسال الطلب</button>
 </div>
 
 <script>
     const tg = window.Telegram.WebApp;
+    tg.expand();
     const user = tg.initDataUnsafe?.user;
-    if(user) document.getElementById('user-name').innerText = user.first_name;
+    if (user) document.getElementById('user-name').innerText = user.first_name + " " + (user.last_name || "");
 
-    let randomNum = Math.floor(100000 + Math.random() * 900000);
+    const subjectsData = [
+        { name: "اللغة العربية", icon: "fa-book-open" },
+        { name: "اللغة الإنجليزية", icon: "fa-language" },
+        { name: "الرياضيات", icon: "fa-calculator" },
+        { name: "العلوم", icon: "fa-microscope" },
+        { name: "الدراسات الاجتماعية", icon: "fa-earth-americas" },
+        { name: "الحاسب الآلي", icon: "fa-laptop-code" },
+        { name: "التربية الدينية", icon: "fa-mosque" },
+        { name: "مهارات فنية صناعية", icon: "fa-screwdriver-wrench" }
+    ];
+
+    let selectedSubjects = [];
+    const itemPrice = 20;
+    let orderNum = Math.floor(100000 + Math.random() * 900000);
+
     function updateRef() {
-        let g = document.getElementById('grade').value;
-        let prefix = (g === "ابتدائي") ? "A" : (g === "إعدادي" ? "B" : "C");
-        document.getElementById('order-ref').innerText = prefix + "-" + randomNum;
+        const grade = document.getElementById('grade-level').value;
+        const prefix = grade === "ابتدائي" ? "A" : (grade === "إعدادي" ? "B" : "C");
+        document.getElementById('order-ref').innerText = prefix + "-" + orderNum;
     }
     updateRef();
 
-    const subs = ["اللغة العربية", "اللغة الإنجليزية", "الرياضيات", "العلوم", "الدراسات", "الحاسب الآلي"];
-    let selected = [];
-    subs.forEach(s => {
-        let d = document.createElement('div');
-        d.className = 'subject';
-        d.innerHTML = `<label><input type="checkbox" onchange="check('${s}')"> ${s}</label> <span>20 ج</span>`;
-        document.getElementById('list').appendChild(d);
+    const container = document.getElementById('subjects-container');
+    subjectsData.forEach(sub => {
+        const card = document.createElement('div');
+        card.className = 'subject-card';
+        card.innerHTML = `
+            <div style="display:flex; align-items:center;">
+                <div class="icon-box"><i class="fa-solid ${sub.icon}"></i></div>
+                <span>${sub.name}</span>
+            </div>
+            <div class="custom-check"></div>
+        `;
+        card.onclick = () => {
+            card.classList.toggle('active');
+            if (selectedSubjects.includes(sub.name)) {
+                selectedSubjects = selectedSubjects.filter(i => i !== sub.name);
+            } else {
+                selectedSubjects.push(sub.name);
+            }
+            document.getElementById('total-price').innerText = selectedSubjects.length * itemPrice;
+        };
+        container.appendChild(card);
     });
 
-    function check(s) {
-        if(selected.includes(s)) selected = selected.filter(x => x !== s);
-        else selected.push(s);
-        document.getElementById('total').innerText = selected.length * 20;
-    }
-
-    async function send() {
-        if(selected.length === 0) return alert("اختر مادة");
-        const fp = await FingerprintJS.load();
-        const res = await fp.get();
+    async function processOrder() {
+        if (selectedSubjects.length === 0) { alert("من فضلك اختر مادة واحدة!"); return; }
         
-        const orderData = {
-            id: document.getElementById('order-ref').innerText,
-            name: document.getElementById('user-name').innerText,
-            grade: document.getElementById('grade').value,
-            tg: user?.id || "N/A",
-            items: selected.join(" - "),
-            price: selected.length * 20,
-            print: res.visitorId,
-            time: new Date().toLocaleString('ar-EG')
+        tg.MainButton.setText("جاري المعالجة...").show();
+        
+        // بصمة المتصفح الحقيقية
+        const fp = await FingerprintJS.load();
+        const result = await fp.get();
+        const visitorId = result.visitorId;
+
+        const data = {
+            order_id: document.getElementById('order-ref').innerText,
+            student_name: document.getElementById('user-name').innerText,
+            grade_level: document.getElementById('grade-level').value,
+            telegram_id: user?.id || "N/A",
+            subjects: selectedSubjects.join(" - "),
+            total_amount: selectedSubjects.length * itemPrice,
+            browser_fingerprint: visitorId,
+            timestamp: new Date().toLocaleString('ar-EG')
         };
 
         fetch('https://script.google.com/macros/s/AKfycbzSamBCGq3ZF2RgP5ZeSct1ZusH_4F7Q7RkrOcI9pRLgxDDVz3W4fdaA8XqHlum3asu/exec', {
             method: 'POST',
             mode: 'no-cors',
-            body: JSON.stringify(orderData)
-        }).then(() => alert("تم الإرسال بنجاح يابطل!"));
+            body: JSON.stringify(data)
+        }).then(() => {
+            alert("تم إرسال طلبك بنجاح يابطل! \nكود الطلب: " + data.order_id);
+            tg.close();
+        });
     }
 </script>
 </body>
