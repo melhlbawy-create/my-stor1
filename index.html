@@ -13,32 +13,29 @@
         .user-info { background: #f8f9fa; padding: 12px; border-radius: 12px; margin-bottom: 20px; border-right: 5px solid #1a73e8; font-size: 0.95em; }
         .selection-group { margin-bottom: 20px; }
         .selection-group label { display: block; margin-bottom: 8px; font-weight: bold; color: #555; }
-        select { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #ddd; background: #fff; font-size: 1em; outline: none; }
+        select { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #ddd; background: #fff; font-size: 1em; }
         .subject-item { display: flex; justify-content: space-between; align-items: center; padding: 12px; border-bottom: 1px solid #eee; }
-        .subject-item:last-child { border-bottom: none; }
         .price { color: #28a745; font-weight: bold; }
         .footer { margin-top: 30px; text-align: center; background: #fff; padding-top: 20px; border-top: 2px dashed #eee; }
         #total-price { font-size: 1.4em; font-weight: bold; color: #d93025; }
-        button { background: #1a73e8; color: white; border: none; padding: 15px; border-radius: 12px; cursor: pointer; width: 100%; font-size: 1.2em; font-weight: bold; margin-top: 15px; box-shadow: 0 4px 6px rgba(26,115,232,0.3); transition: 0.2s; }
-        button:active { transform: scale(0.98); }
+        button { background: #1a73e8; color: white; border: none; padding: 15px; border-radius: 12px; cursor: pointer; width: 100%; font-size: 1.2em; font-weight: bold; margin-top: 15px; box-shadow: 0 4px 6px rgba(26,115,232,0.3); }
     </style>
 </head>
 <body>
 
 <div class="container">
     <h2>الكبسولة التعليمية</h2>
-    
     <div class="user-info">
         <b>الطالب:</b> <span id="user-name">زائر الكبسولة</span><br>
-        <b>رقم الطلب:</b> <span id="order-ref">...</span>
+        <b>رقم الطلب المرجعي:</b> <span id="order-ref" style="color:red; font-weight:bold;">A-000000</span>
     </div>
 
     <div class="selection-group">
         <label>اختر المرحلة الدراسية:</label>
-        <select id="grade-level">
-            <option value="ابتدائي">المرحلة الابتدائية</option>
-            <option value="إعدادي">المرحلة الإعدادية</option>
-            <option value="ثانوي">المرحلة الثانوية</option>
+        <select id="grade-level" onchange="updateOrderRef()">
+            <option value="ابتدائي">المرحلة الابتدائية (A)</option>
+            <option value="إعدادي">المرحلة الإعدادية (B)</option>
+            <option value="ثانوي">المرحلة الثانوية (C)</option>
         </select>
     </div>
 
@@ -56,14 +53,19 @@
 <script>
     const tg = window.Telegram.WebApp;
     tg.expand();
-
     const user = tg.initDataUnsafe?.user;
-    if (user) {
-        document.getElementById('user-name').innerText = user.first_name + (user.last_name ? " " + user.last_name : "");
-    }
+    if (user) document.getElementById('user-name').innerText = user.first_name + (user.last_name ? " " + user.last_name : "");
 
-    const orderRef = "CAP-" + Math.floor(100000 + Math.random() * 900000);
-    document.getElementById('order-ref').innerText = orderRef;
+    // وظيفة تحديث الرقم المرجعي الذكي
+    let currentRandom = Math.floor(100000 + Math.random() * 900000);
+    function updateOrderRef() {
+        const grade = document.getElementById('grade-level').value;
+        let prefix = "A";
+        if (grade === "إعدادي") prefix = "B";
+        if (grade === "ثانوي") prefix = "C";
+        document.getElementById('order-ref').innerText = prefix + "-" + currentRandom;
+    }
+    updateOrderRef(); // تشغيل أولي
 
     const subjects = ["اللغة العربية", "اللغة الإنجليزية", "الرياضيات", "العلوم", "الدراسات", "الحاسب الآلي"];
     const itemPrice = 20;
@@ -73,10 +75,7 @@
     subjects.forEach(sub => {
         const d = document.createElement('div');
         d.className = 'subject-item';
-        d.innerHTML = `
-            <label><input type="checkbox" onchange="toggle('${sub}')"> ${sub}</label>
-            <span class="price">${itemPrice} ج</span>
-        `;
+        d.innerHTML = `<label><input type="checkbox" onchange="toggle('${sub}')"> ${sub}</label><span class="price">${itemPrice} ج</span>`;
         listDiv.appendChild(d);
     });
 
@@ -87,22 +86,14 @@
     }
 
     async function processOrder() {
-        if (selectedSubjects.length === 0) {
-            alert("برجاء اختيار مادة واحدة على الأقل");
-            return;
-        }
+        if (selectedSubjects.length === 0) { alert("برجاء اختيار مادة واحدة على الأقل"); return; }
+        alert("جاري تسجيل طلبك...");
 
-        alert("جاري تسجيل طلبك في النظام...");
-
-        let vId = "غير معروف";
-        try {
-            const fp = await FingerprintJS.load();
-            const res = await fp.get();
-            vId = res.visitorId;
-        } catch(e) {}
+        let vId = "N/A";
+        try { const fp = await FingerprintJS.load(); const res = await fp.get(); vId = res.visitorId; } catch(e) {}
 
         const data = {
-            order_id: orderRef,
+            order_id: document.getElementById('order-ref').innerText, // الرقم الذكي
             student_name: document.getElementById('user-name').innerText,
             grade_level: document.getElementById('grade-level').value,
             telegram_id: user?.id || "N/A",
@@ -112,15 +103,13 @@
             date: new Date().toLocaleString('ar-EG')
         };
 
-        const url = 'https://script.google.com/macros/s/AKfycbzSamBCGq3ZF2RgP5ZeSct1ZusH_4F7Q7RkrOcI9pRLgxDDVz3W4fdaA8XqHlum3asu/exec';
-
-        fetch(url, {
+        fetch('https://script.google.com/macros/s/AKfycbzSamBCGq3ZF2RgP5ZeSct1ZusH_4F7Q7RkrOcI9pRLgxDDVz3W4fdaA8XqHlum3asu/exec', {
             method: 'POST',
             mode: 'no-cors',
             body: JSON.stringify(data)
         }).then(() => {
-            alert("تم الإرسال بنجاح يا " + data.student_name + "\nرقم طلبك هو: " + orderRef);
-        }).catch(e => alert("حدث خطأ: " + e));
+            alert("تم الإرسال بنجاح!\nرقم الطلب: " + data.order_id);
+        });
     }
 </script>
 </body>
