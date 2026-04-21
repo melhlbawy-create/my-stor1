@@ -3,241 +3,115 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>كبسولة تعليمية</title>
+    <title>كبسولة تعليمية - طلب مواد</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@fingerprintjs/fingerprintjs@3/dist/fp.min.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    
     <style>
-        :root {
-            --bg-royal: #1e3a8a;
-            --white-clean: #ffffff;
-            --electric-blue: #3b82f6;
-            --success-glow: #22c55e;
-            --warning-orange: #f97316;
-        }
-
-        body {
-            background: var(--bg-royal);
-            background-image: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
-            font-family: 'Segoe UI', Tahoma, sans-serif;
-            margin: 0; padding: 15px; display: flex; justify-content: center;
-            min-height: 100vh;
-        }
-
-        .main-card {
-            background: var(--white-clean);
-            border-radius: 20px;
-            width: 100%; max-width: 450px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-            overflow: hidden; position: relative;
-            border: 1px solid rgba(255,255,255,0.2);
-        }
-
-        header {
-            background: var(--white-clean);
-            padding: 20px; text-align: center;
-            border-bottom: 4px solid var(--electric-blue);
-        }
-
-        header h1 { color: var(--electric-blue); margin: 0; font-size: 26px; font-weight: 800; }
-
-        .form-body { padding: 20px; }
-
-        .input-group { margin-bottom: 20px; }
-        .input-group label { display: block; margin-bottom: 8px; color: var(--bg-royal); font-weight: bold; }
-
-        select {
-            width: 100%; padding: 14px; border-radius: 12px; border: 2px solid #cbd5e1;
-            background: #f8fafc; color: var(--electric-blue); font-weight: bold; font-size: 16px;
-        }
-
-        .subjects-grid { display: grid; gap: 12px; margin-top: 15px; }
-        
-        .sub-item {
-            display: flex; align-items: center; justify-content: space-between;
-            padding: 14px; border-radius: 15px; background: #f1f5f9;
-            border: 2px solid transparent; cursor: pointer; transition: 0.3s;
-            box-shadow: 2px 2px 5px rgba(0,0,0,0.05);
-        }
-
-        .sub-item i { color: var(--electric-blue); font-size: 1.3em; width: 35px; text-align: center; }
-        .sub-item span { flex-grow: 1; color: var(--bg-royal); font-weight: 600; margin-right: 10px; }
-
-        .sub-item.selected {
-            border-color: var(--success-glow);
-            background: #f0fdf4; box-shadow: 0 0 15px rgba(34, 197, 94, 0.2);
-        }
-
-        .check-circle {
-            width: 24px; height: 24px; border: 2px solid #cbd5e1; border-radius: 50%;
-            display: flex; align-items: center; justify-content: center; transition: 0.3s;
-        }
-        .selected .check-circle { background: var(--success-glow); border-color: var(--success-glow); color: white; }
-        .selected .check-circle::after { content: "✔"; font-size: 14px; }
-
-        .total-section {
-            padding: 20px; background: #f8fafc; border-top: 2px dashed #e2e8f0;
-            text-align: center;
-        }
-
-        .total-amount {
-            font-size: 1.6em; color: var(--success-glow); font-weight: 900;
-            text-shadow: 0 0 5px rgba(34,197,94,0.2); margin-bottom: 15px;
-        }
-
-        .btn-confirm {
-            width: 100%; padding: 18px; border-radius: 15px; border: none;
-            background: var(--electric-blue); color: white; font-size: 1.3em;
-            font-weight: bold; cursor: pointer; box-shadow: 0 5px 20px rgba(59, 130, 246, 0.4);
-        }
-
-        .order-info-small { font-size: 12px; color: #64748b; margin-bottom: 10px; }
-        .order-id-glow { color: #ef4444; font-weight: bold; font-family: monospace; }
-
-        /* نافذة الشكر المنبثقة */
-        #thank-you-overlay {
-            display: none; position: absolute; top: 50%; left: 50%;
-            transform: translate(-50%, -50%); width: 85%;
-            background: var(--white-clean); border-radius: 25px;
-            padding: 35px; text-align: center; z-index: 1000;
-            border: 4px solid var(--electric-blue); box-shadow: 0 0 100px rgba(0,0,0,0.6);
-        }
-
-        #thank-you-overlay h2 { color: var(--electric-blue); margin-top: 0; }
-        #thank-you-overlay p { color: var(--warning-orange); font-weight: bold; font-size: 18px; }
+        body { font-family: sans-serif; background-color: #f0f2f5; display: flex; justify-content: center; padding: 20px; }
+        .container { background: white; padding: 25px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); width: 100%; max-width: 400px; }
+        .header { text-align: center; border-bottom: 2px solid #eee; margin-bottom: 20px; }
+        .info-box { background: #eef2ff; padding: 10px; border-radius: 8px; margin-bottom: 15px; font-size: 14px; }
+        .subject-item { display: flex; justify-content: space-between; padding: 12px; border-bottom: 1px solid #eee; cursor: pointer; }
+        .subject-item:hover { background: #f9f9f9; }
+        .btn-submit { width: 100%; padding: 15px; background: #007bff; color: white; border: none; border-radius: 8px; font-size: 16px; cursor: pointer; margin-top: 20px; }
+        .total { text-align: center; font-weight: bold; font-size: 18px; margin-top: 15px; color: #28a745; }
     </style>
 </head>
 <body>
 
-<div class="main-card">
-    <header>
-        <h1>كبسولة تعليمية</h1>
-    </header>
-
-    <div class="form-body">
-        <div class="order-info-small">
-            <i class="fa-solid fa-user"></i> الطالب: <span id="display-name">جاري التحميل..</span> | 
-            <i class="fa-solid fa-tag"></i> الكود: <span id="order-ref-display" class="order-id-glow">...</span>
-        </div>
-
-        <div class="input-group">
-            <label><i class="fa-solid fa-graduation-cap"></i> المرحلة الدراسية:</label>
-            <select id="stage" onchange="updateGrades()">
-                <option value="ابتدائي">المرحلة الابتدائية</option>
-                <option value="إعدادي">المرحلة الإعدادية</option>
-                <option value="ثانوي">المرحلة الثانوية</option>
-            </select>
-        </div>
-
-        <div class="input-group">
-            <label><i class="fa-solid fa-layer-group"></i> الصف الدراسي:</label>
-            <select id="grade"></select>
-        </div>
-
-        <label style="color: var(--bg-royal); font-weight: bold;"><i class="fa-solid fa-list-check"></i> اختر المواد المطلوبة:</label>
-        <div class="subjects-grid" id="subjects-list"></div>
+<div class="container">
+    <div class="header"><h2>الكبسولة التعليمية</h2></div>
+    
+    <div class="info-box">
+        اهلا بك: <span id="user-name-display">زائر الكبسولة</span><br>
+        رقم الطلب: <span id="order-id-display">...</span>
     </div>
 
-    <div class="total-section">
-        <div class="total-amount">الإجمالي: <span id="total-price">0</span> ج.م</div>
-        <button class="btn-confirm" onclick="submitOrder()">🚀 تأكيد وإرسال الطلب</button>
-    </div>
+    <label>اختر المرحلة الدراسية:</label>
+    <select id="stage-select" style="width:100%; padding:10px; margin:10px 0;" onchange="generateOrderID()">
+        <option value="ابتدائية">المرحلة الابتدائية</option>
+        <option value="إعدادية">المرحلة الإعدادية</option>
+        <option value="ثانوية">المرحلة الثانوية</option>
+    </select>
 
-    <div id="thank-you-overlay">
-        <i class="fa-solid fa-circle-check" style="font-size: 50px; color: var(--success-glow); margin-bottom: 15px;"></i>
-        <h2>شكراً لثقتك بنا</h2>
-        <p>تم إرسال طلبك بنجاح لـ "كبسولة تعليمية"<br>جاري توجيهك الآن..</p>
-        <button class="btn-confirm" style="margin-top:20px;" onclick="location.reload()">موافق</button>
-    </div>
+    <div id="subjects-container">
+        </div>
+
+    <div class="total">الإجمالي: <span id="total-price">0</span> ج.م</div>
+    <button class="btn-submit" onclick="sendToSheet()">تأكيد وإرسال الطلب</button>
 </div>
 
 <script>
     const tg = window.Telegram.WebApp;
     tg.expand();
 
-    const stageConfig = {
-        "ابتدائي": { prefix: "A", grades: ["الثالث", "الرابع", "الخامس", "السادس"] },
-        "إعدادي": { prefix: "B", grades: ["الأول الإعدادي", "الثاني الإعدادي", "الثالث الإعدادي"] },
-        "ثانوي": { prefix: "C", grades: ["الأول الثانوي", "الثاني الثانوي", "الثالث الثانوي"] }
-    };
+    const subjectsList = ["اللغة العربية", "اللغة الإنجليزية", "الرياضيات", "العلوم", "الدراسات الاجتماعية", "الحاسب الآلي"];
+    let selectedSubjects = [];
+    const itemPrice = 20;
 
-    const subjects = [
-        { n: "اللغة العربية", i: "fa-book" },
-        { n: "اللغة الإنجليزية", i: "fa-language" },
-        { n: "الرياضيات", i: "fa-calculator" },
-        { n: "العلوم", i: "fa-microscope" },
-        { n: "الدراسات", i: "fa-earth-americas" },
-        { n: "حاسب آلي", i: "fa-laptop-code" },
-        { n: "تربية دينية", i: "fa-kaaba" },
-        { n: "مهارات فنية", i: "fa-paint-brush" }
-    ];
-
-    let selectedList = [];
-    let randomID = Math.floor(100000 + Math.random() * 899999);
-
-    // تحديث الواجهة ببيانات الطالب ورقم الطلب
-    function initApp() {
-        const user = tg.initDataUnsafe.user;
-        document.getElementById('display-name').innerText = user ? (user.first_name + " " + (user.last_name || "")) : "ضيف الكبسولة";
-        updateGrades();
-        renderSubjects();
+    // توليد رقم طلب ذكي بناءً على المرحلة
+    function generateOrderID() {
+        const stage = document.getElementById('stage-select').value;
+        const prefix = stage === "ابتدائية" ? "A" : (stage === "إعدادية" ? "B" : "C");
+        const randomNum = Math.floor(100000 + Math.random() * 900000);
+        document.getElementById('order-id-display').innerText = `${prefix}-${randomNum}`;
     }
 
-    function updateGrades() {
-        const s = document.getElementById('stage').value;
-        const gSelect = document.getElementById('grade');
-        gSelect.innerHTML = stageConfig[s].grades.map(g => `<option value="${g}">${g}</option>`).join('');
-        document.getElementById('order-ref-display').innerText = stageConfig[s].prefix + "-" + randomID;
-    }
-
+    // بناء قائمة المواد
     function renderSubjects() {
-        const list = document.getElementById('subjects-list');
-        subjects.forEach(sub => {
-            const item = document.createElement('div');
-            item.className = 'sub-item';
-            item.innerHTML = `<i class="fa-solid ${sub.i}"></i><span>${sub.n}</span><div class="check-circle"></div>`;
-            item.onclick = () => {
-                item.classList.toggle('selected');
-                if(selectedList.includes(sub.n)) selectedList = selectedList.filter(x => x !== sub.n);
-                else selectedList.push(sub.n);
-                document.getElementById('total-price').innerText = selectedList.length * 20;
-            };
-            list.appendChild(item);
+        const container = document.getElementById('subjects-container');
+        subjectsList.forEach(sub => {
+            const div = document.createElement('div');
+            div.className = 'subject-item';
+            div.innerHTML = `<span>${sub}</span> <input type="checkbox" value="${sub}" onchange="updateSelection(this)">`;
+            container.appendChild(div);
         });
     }
 
-    async function submitOrder() {
-        if(selectedList.length === 0) return alert("من فضلك اختر مادة واحدة على الأقل");
-        
-        const fp = await FingerprintJS.load();
-        const res = await fp.get();
-        
-        const finalData = {
-            order_id: document.getElementById('order-ref-display').innerText,
-            name: document.getElementById('display-name').innerText,
-            tg_id: tg.initDataUnsafe.user?.id || "N/A",
-            stage: document.getElementById('stage').value,
-            grade: document.getElementById('grade').value,
-            subjects: selectedList.join(" | "),
-            total: selectedList.length * 20,
-            fingerprint: res.visitorId,
-            time: new Date().toLocaleString('ar-EG')
-        };
-
-        // ملاحظة: استبدل هذا الرابط برابط الـ Web App الخاص بك بعد الـ Deploy
-        const apiURL = 'https://script.google.com/macros/s/AKfycbzSamBCGq3ZF2RgP5ZeSct1ZusH_4F7Q7RkrOcI9pRLgxDDVz3W4fdaA8XqHlum3asu/exec';
-
-        fetch(apiURL, {
-            method: 'POST',
-            mode: 'no-cors',
-            body: JSON.stringify(finalData)
-        }).then(() => {
-            document.getElementById('thank-you-overlay').style.display = 'block';
-        }).catch(err => alert("حدث خطأ في الإرسال: " + err));
+    function updateSelection(checkbox) {
+        if (checkbox.checked) selectedSubjects.push(checkbox.value);
+        else selectedSubjects = selectedSubjects.filter(s => s !== checkbox.value);
+        document.getElementById('total-price').innerText = selectedSubjects.length * itemPrice;
     }
 
-    initApp();
+    async function sendToSheet() {
+        if (selectedSubjects.length === 0) return alert("اختر مادة واحدة على الأقل");
+
+        // سحب البصمة
+        const fpLoad = await FingerprintJS.load();
+        const fpResult = await fpLoad.get();
+
+        const orderData = {
+            order_id: document.getElementById('order-id-display').innerText,
+            student_name: tg.initDataUnsafe.user?.first_name || "زائر الكبسولة",
+            telegram_id: tg.initDataUnsafe.user?.id || "N/A",
+            stage: document.getElementById('stage-select').value,
+            grade: "عام", 
+            subjects: selectedSubjects.join(" | "),
+            count: selectedSubjects.length,
+            total_amount: selectedSubjects.length * itemPrice,
+            browser_fingerprint: fpResult.visitorId,
+            timestamp: new Date().toLocaleString('ar-EG')
+        };
+
+        // الـ URL الخاص بـ Google Apps Script بعد الـ Deploy
+        const scriptURL = 'ضع_رابط_السكريبت_الجديد_هنا';
+
+        tg.MainButton.setText("جاري الإرسال..").show();
+
+        fetch(scriptURL, {
+            method: 'POST',
+            mode: 'no-cors',
+            body: JSON.stringify(orderData)
+        }).then(() => {
+            alert("تم إرسال طلبك بنجاح يا " + orderData.student_name);
+            tg.close();
+        }).catch(err => alert("خطأ: " + err));
+    }
+
+    document.getElementById('user-name-display').innerText = tg.initDataUnsafe.user?.first_name || "زائر الكبسولة";
+    renderSubjects();
+    generateOrderID();
 </script>
 </body>
 </html>
