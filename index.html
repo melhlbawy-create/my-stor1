@@ -4,240 +4,436 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>كبسولة تعليمية</title>
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@fingerprintjs/fingerprintjs@3/dist/fp.min.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    
     <style>
-        :root {
-            --bg-royal: #1e3a8a;
-            --white-clean: #ffffff;
-            --electric-blue: #3b82f6;
-            --success-glow: #22c55e;
-            --warning-orange: #f97316;
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
-
-        body {
-            background: var(--bg-royal);
-            background-image: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
-            font-family: 'Segoe UI', Tahoma, sans-serif;
-            margin: 0; padding: 15px; display: flex; justify-content: center;
-            min-height: 100vh;
-        }
-
-        .main-card {
-            background: var(--white-clean);
-            border-radius: 20px;
-            width: 100%; max-width: 450px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-            overflow: hidden; position: relative;
-            border: 1px solid rgba(255,255,255,0.2);
-        }
-
-        header {
-            background: var(--white-clean);
-            padding: 20px; text-align: center;
-            border-bottom: 4px solid var(--electric-blue);
-        }
-
-        header h1 { color: var(--electric-blue); margin: 0; font-size: 26px; font-weight: 800; }
-
-        .form-body { padding: 20px; }
-
-        .input-group { margin-bottom: 20px; }
-        .input-group label { display: block; margin-bottom: 8px; color: var(--bg-royal); font-weight: bold; }
-
-        select {
-            width: 100%; padding: 14px; border-radius: 12px; border: 2px solid #cbd5e1;
-            background: #f8fafc; color: var(--electric-blue); font-weight: bold; font-size: 16px;
-        }
-
-        .subjects-grid { display: grid; gap: 12px; margin-top: 15px; }
         
-        .sub-item {
-            display: flex; align-items: center; justify-content: space-between;
-            padding: 14px; border-radius: 15px; background: #f1f5f9;
-            border: 2px solid transparent; cursor: pointer; transition: 0.3s;
-            box-shadow: 2px 2px 5px rgba(0,0,0,0.05);
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
         }
-
-        .sub-item i { color: var(--electric-blue); font-size: 1.3em; width: 35px; text-align: center; }
-        .sub-item span { flex-grow: 1; color: var(--bg-royal); font-weight: 600; margin-right: 10px; }
-
-        .sub-item.selected {
-            border-color: var(--success-glow);
-            background: #f0fdf4; box-shadow: 0 0 15px rgba(34, 197, 94, 0.2);
+        
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
         }
-
-        .check-circle {
-            width: 24px; height: 24px; border: 2px solid #cbd5e1; border-radius: 50%;
-            display: flex; align-items: center; justify-content: center; transition: 0.3s;
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 3px solid #667eea;
         }
-        .selected .check-circle { background: var(--success-glow); border-color: var(--success-glow); color: white; }
-        .selected .check-circle::after { content: "✔"; font-size: 14px; }
-
-        .total-section {
-            padding: 20px; background: #f8fafc; border-top: 2px dashed #e2e8f0;
+        
+        .header h1 {
+            color: #667eea;
+            font-size: 2em;
+            margin-bottom: 10px;
+        }
+        
+        .student-info {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
             text-align: center;
         }
-
-        .total-amount {
-            font-size: 1.6em; color: var(--success-glow); font-weight: 900;
-            text-shadow: 0 0 5px rgba(34,197,94,0.2); margin-bottom: 15px;
+        
+        .student-info p {
+            margin: 5px 0;
+            font-weight: bold;
         }
-
-        .btn-confirm {
-            width: 100%; padding: 18px; border-radius: 15px; border: none;
-            background: var(--electric-blue); color: white; font-size: 1.3em;
-            font-weight: bold; cursor: pointer; box-shadow: 0 5px 20px rgba(59, 130, 246, 0.4);
+        
+        .form-group {
+            margin-bottom: 20px;
         }
-
-        .order-info-small { font-size: 12px; color: #64748b; margin-bottom: 10px; }
-        .order-id-glow { color: #ef4444; font-weight: bold; font-family: monospace; }
-
-        /* نافذة الشكر المنبثقة */
-        #thank-you-overlay {
-            display: none; position: absolute; top: 50%; left: 50%;
-            transform: translate(-50%, -50%); width: 85%;
-            background: var(--white-clean); border-radius: 25px;
-            padding: 35px; text-align: center; z-index: 1000;
-            border: 4px solid var(--electric-blue); box-shadow: 0 0 100px rgba(0,0,0,0.6);
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: bold;
         }
-
-        #thank-you-overlay h2 { color: var(--electric-blue); margin-top: 0; }
-        #thank-you-overlay p { color: var(--warning-orange); font-weight: bold; font-size: 18px; }
+        
+        select, input[type="text"] {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+        
+        select:focus, input[type="text"]:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .subjects-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        .subject-checkbox {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        
+        .subject-checkbox:hover {
+            background: #e9ecef;
+        }
+        
+        .subject-checkbox input[type="checkbox"] {
+            margin-left: 8px;
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+        
+        .subject-checkbox label {
+            margin: 0;
+            cursor: pointer;
+            font-weight: normal;
+        }
+        
+        .total {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            margin: 20px 0;
+            font-size: 1.5em;
+            font-weight: bold;
+        }
+        
+        .submit-btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.2em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        
+        .submit-btn:hover {
+            transform: translateY(-2px);
+        }
+        
+        .submit-btn:active {
+            transform: translateY(0);
+        }
+        
+        .success-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .success-content {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            text-align: center;
+            max-width: 400px;
+        }
+        
+        .success-content h2 {
+            color: #28a745;
+            margin-bottom: 15px;
+        }
+        
+        .success-content p {
+            margin: 10px 0;
+            color: #666;
+        }
+        
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
     </style>
 </head>
 <body>
-
-<div class="main-card">
-    <header>
-        <h1>كبسولة تعليمية</h1>
-    </header>
-
-    <div class="form-body">
-        <div class="order-info-small">
-            <i class="fa-solid fa-user"></i> الطالب: <span id="display-name">جاري التحميل..</span> | 
-            <i class="fa-solid fa-tag"></i> الكود: <span id="order-ref-display" class="order-id-glow">...</span>
+    <div class="container">
+        <div class="header">
+            <h1>كبسولة تعليمية</h1>
         </div>
-
-        <div class="input-group">
-            <label><i class="fa-solid fa-graduation-cap"></i> المرحلة الدراسية:</label>
-            <select id="stage" onchange="updateGrades()">
-                <option value="ابتدائي">المرحلة الابتدائية</option>
-                <option value="إعدادي">المرحلة الإعدادية</option>
-                <option value="ثانوي">المرحلة الثانوية</option>
-            </select>
-        </div>
-
-        <div class="input-group">
-            <label><i class="fa-solid fa-layer-group"></i> الصف الدراسي:</label>
-            <select id="grade"></select>
-        </div>
-
-        <label style="color: var(--bg-royal); font-weight: bold;"><i class="fa-solid fa-list-check"></i> اختر المواد المطلوبة:</label>
-        <div class="subjects-grid" id="subjects-list"></div>
-    </div>
-
-    <div class="total-section">
-        <div class="total-amount">الإجمالي: <span id="total-price">0</span> ج.م</div>
-        <button class="btn-confirm" onclick="submitOrder()">🚀 تأكيد وإرسال الطلب</button>
-    </div>
-
-    <div id="thank-you-overlay">
-        <i class="fa-solid fa-circle-check" style="font-size: 50px; color: var(--success-glow); margin-bottom: 15px;"></i>
-        <h2>شكراً لثقتك بنا</h2>
-        <p>تم إرسال طلبك بنجاح لـ "كبسولة تعليمية"<br>جاري توجيهك الآن..</p>
-        <button class="btn-confirm" style="margin-top:20px;" onclick="location.reload()">موافق</button>
-    </div>
-</div>
-
-<script>
-    const tg = window.Telegram.WebApp;
-    tg.expand();
-
-    const stageConfig = {
-        "ابتدائي": { prefix: "A", grades: ["الثالث", "الرابع", "الخامس", "السادس"] },
-        "إعدادي": { prefix: "B", grades: ["الأول الإعدادي", "الثاني الإعدادي", "الثالث الإعدادي"] },
-        "ثانوي": { prefix: "C", grades: ["الأول الثانوي", "الثاني الثانوي", "الثالث الثانوي"] }
-    };
-
-    const subjects = [
-        { n: "اللغة العربية", i: "fa-book" },
-        { n: "اللغة الإنجليزية", i: "fa-language" },
-        { n: "الرياضيات", i: "fa-calculator" },
-        { n: "العلوم", i: "fa-microscope" },
-        { n: "الدراسات", i: "fa-earth-americas" },
-        { n: "حاسب آلي", i: "fa-laptop-code" },
-        { n: "تربية دينية", i: "fa-kaaba" },
-        { n: "مهارات فنية", i: "fa-paint-brush" }
-    ];
-
-    let selectedList = [];
-    let randomID = Math.floor(100000 + Math.random() * 899999);
-
-    // تحديث الواجهة ببيانات الطالب ورقم الطلب
-    function initApp() {
-        const user = tg.initDataUnsafe.user;
-        document.getElementById('display-name').innerText = user ? (user.first_name + " " + (user.last_name || "")) : "ضيف الكبسولة";
-        updateGrades();
-        renderSubjects();
-    }
-
-    function updateGrades() {
-        const s = document.getElementById('stage').value;
-        const gSelect = document.getElementById('grade');
-        gSelect.innerHTML = stageConfig[s].grades.map(g => `<option value="${g}">${g}</option>`).join('');
-        document.getElementById('order-ref-display').innerText = stageConfig[s].prefix + "-" + randomID;
-    }
-
-    function renderSubjects() {
-        const list = document.getElementById('subjects-list');
-        subjects.forEach(sub => {
-            const item = document.createElement('div');
-            item.className = 'sub-item';
-            item.innerHTML = `<i class="fa-solid ${sub.i}"></i><span>${sub.n}</span><div class="check-circle"></div>`;
-            item.onclick = () => {
-                item.classList.toggle('selected');
-                if(selectedList.includes(sub.n)) selectedList = selectedList.filter(x => x !== sub.n);
-                else selectedList.push(sub.n);
-                document.getElementById('total-price').innerText = selectedList.length * 20;
-            };
-            list.appendChild(item);
-        });
-    }
-
-    async function submitOrder() {
-        if(selectedList.length === 0) return alert("من فضلك اختر مادة واحدة على الأقل");
         
-        const fp = await FingerprintJS.load();
-        const res = await fp.get();
+        <div class="student-info">
+            <p id="studentName">الطالب: جاري التحميل..</p>
+            <p id="studentCode">الكود: ...</p>
+        </div>
         
-        const finalData = {
-            order_id: document.getElementById('order-ref-display').innerText,
-            name: document.getElementById('display-name').innerText,
-            tg_id: tg.initDataUnsafe.user?.id || "N/A",
-            stage: document.getElementById('stage').value,
-            grade: document.getElementById('grade').value,
-            subjects: selectedList.join(" | "),
-            total: selectedList.length * 20,
-            fingerprint: res.visitorId,
-            time: new Date().toLocaleString('ar-EG')
+        <form id="orderForm">
+            <div class="form-group">
+                <label>المرحلة الدراسية:</label>
+                <select id="stage" required>
+                    <option value="">اختر المرحلة</option>
+                    <option value="المرحلة الابتدائية">المرحلة الابتدائية</option>
+                    <option value="المرحلة الإعدادية">المرحلة الإعدادية</option>
+                    <option value="المرحلة الثانوية">المرحلة الثانوية</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label>الصف الدراسي:</label>
+                <select id="grade" required>
+                    <option value="">اختر الصف</option>
+                    <option value="الأول الابتدائي">الأول الابتدائي</option>
+                    <option value="الثاني الابتدائي">الثاني الابتدائي</option>
+                    <option value="الثالث الابتدائي">الثالث الابتدائي</option>
+                    <option value="الرابع الابتدائي">الرابع الابتدائي</option>
+                    <option value="الخامس الابتدائي">الخامس الابتدائي</option>
+                    <option value="السادس الابتدائي">السادس الابتدائي</option>
+                    <option value="الأول الإعدادي">الأول الإعدادي</option>
+                    <option value="الثاني الإعدادي">الثاني الإعدادي</option>
+                    <option value="الثالث الإعدادي">الثالث الإعدادي</option>
+                    <option value="الأول الثانوي">الأول الثانوي</option>
+                    <option value="الثاني الثانوي">الثاني الثانوي</option>
+                    <option value="الثالث الثانوي">الثالث الثانوي</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label>اختر المواد المطلوبة:</label>
+                <div class="subjects-grid">
+                    <div class="subject-checkbox">
+                        <input type="checkbox" id="subj1" name="subject" value="اللغة العربية" data-price="50">
+                        <label for="subj1">اللغة العربية</label>
+                    </div>
+                    <div class="subject-checkbox">
+                        <input type="checkbox" id="subj2" name="subject" value="اللغة الإنجليزية" data-price="50">
+                        <label for="subj2">اللغة الإنجليزية</label>
+                    </div>
+                    <div class="subject-checkbox">
+                        <input type="checkbox" id="subj3" name="subject" value="الرياضيات" data-price="50">
+                        <label for="subj3">الرياضيات</label>
+                    </div>
+                    <div class="subject-checkbox">
+                        <input type="checkbox" id="subj4" name="subject" value="العلوم" data-price="50">
+                        <label for="subj4">العلوم</label>
+                    </div>
+                    <div class="subject-checkbox">
+                        <input type="checkbox" id="subj5" name="subject" value="الدراسات" data-price="50">
+                        <label for="subj5">الدراسات</label>
+                    </div>
+                    <div class="subject-checkbox">
+                        <input type="checkbox" id="subj6" name="subject" value="حاسب آلي" data-price="50">
+                        <label for="subj6">حاسب آلي</label>
+                    </div>
+                    <div class="subject-checkbox">
+                        <input type="checkbox" id="subj7" name="subject" value="تربية دينية" data-price="50">
+                        <label for="subj7">تربية دينية</label>
+                    </div>
+                    <div class="subject-checkbox">
+                        <input type="checkbox" id="subj8" name="subject" value="مهارات فنية" data-price="50">
+                        <label for="subj8">مهارات فنية</label>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="total">
+                الإجمالي: <span id="totalAmount">0</span> ج.م
+            </div>
+            
+            <button type="submit" class="submit-btn">🚀 تأكيد وإرسال الطلب</button>
+        </form>
+    </div>
+    
+    <div class="success-modal" id="successModal">
+        <div class="success-content">
+            <h2>شكراً لثقتك بنا</h2>
+            <p>تم إرسال طلبك بنجاح لـ "كبسولة تعليمية"</p>
+            <p>جاري توجيهك الآن..</p>
+            <button onclick="closeModal()" style="margin-top: 20px; padding: 10px 30px; background: #667eea; color: white; border: none; border-radius: 8px; cursor: pointer;">موافق</button>
+        </div>
+    </div>
+
+    <script>
+        // ==================== ملاحظات مهمة ====================
+        // 1. ضع رابط Google Apps Script الخاص بك هنا
+        // 2. تأكد من نشر السكربت كـ Web App
+        // 3. اضبط الصلاحيات على "Anyone"
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbz6pso3B3tT5QIdywkndyPmjdBdtt7ZIX48iOeoUwgUAiHgq38Ecj9BN2Q1iha2TDqz/exec';
+        
+        // ==================== المتغيرات العامة ====================
+        let studentData = {
+            name: '',
+            code: '',
+            telegramId: ''
         };
-
-        // ملاحظة: استبدل هذا الرابط برابط الـ Web App الخاص بك بعد الـ Deploy
-        const apiURL = 'https://script.google.com/macros/s/AKfycbyJ23trbn_padKJEUR042Ks9x1YWA-BIhCH-B03Un3dQ4PbvBHSkbdEMh2xIUKls-aO/exec';
-
-        fetch(apiURL, {
-            method: 'POST',
-            mode: 'no-cors',
-            body: JSON.stringify(finalData)
-        }).then(() => {
-            document.getElementById('thank-you-overlay').style.display = 'block';
-        }).catch(err => alert("حدث خطأ في الإرسال: " + err));
-    }
-
-    initApp();
-</script>
+        
+        const SUBJECT_PRICE = 50; // سعر المادة الواحدة
+        
+        // ==================== عند تحميل الصفحة ====================
+        window.addEventListener('DOMContentLoaded', function() {
+            // محاولة جلب بيانات الطالب من URL Parameters
+            const urlParams = new URLSearchParams(window.location.search);
+            studentData.name = urlParams.get('name') || 'ضيف الكبسولة';
+            studentData.code = urlParams.get('code') || generateOrderCode();
+            studentData.telegramId = urlParams.get('telegram') || '';
+            
+            // عرض بيانات الطالب
+            document.getElementById('studentName').textContent = 'الطالب: ' + studentData.name;
+            document.getElementById('studentCode').textContent = 'الكود: ' + studentData.code;
+            
+            // إضافة مستمعي الأحداث
+            setupEventListeners();
+        });
+        
+        // ==================== إعداد مستمعي الأحداث ====================
+        function setupEventListeners() {
+            // حساب الإجمالي عند تغيير أي checkbox
+            const checkboxes = document.querySelectorAll('input[name="subject"]');
+            checkboxes.forEach(checkbox => {
+                checkbox.addEventListener('change', calculateTotal);
+            });
+            
+            // إرسال النموذج
+            document.getElementById('orderForm').addEventListener('submit', submitForm);
+        }
+        
+        // ==================== حساب الإجمالي ====================
+        function calculateTotal() {
+            const checkboxes = document.querySelectorAll('input[name="subject"]:checked');
+            const total = checkboxes.length * SUBJECT_PRICE;
+            document.getElementById('totalAmount').textContent = total;
+        }
+        
+        // ==================== توليد كود الطلب ====================
+        function generateOrderCode() {
+            const prefix = String.fromCharCode(65 + Math.floor(Math.random() * 26));
+            const number = Math.floor(100000 + Math.random() * 900000);
+            return prefix + '-' + number;
+        }
+        
+        // ==================== إرسال النموذج ====================
+        function submitForm(e) {
+            e.preventDefault();
+            
+            // ==================== جمع البيانات ====================
+            // 1. جمع المواد المختارة
+            const selectedSubjects = [];
+            const checkboxes = document.querySelectorAll('input[name="subject"]:checked');
+            
+            checkboxes.forEach(checkbox => {
+                selectedSubjects.push(checkbox.value);
+            });
+            
+            // التحقق من اختيار مواد
+            if (selectedSubjects.length === 0) {
+                alert('الرجاء اختيار مادة واحدة على الأقل');
+                return;
+            }
+            
+            // 2. تجهيز البيانات للإرسال
+            const formData = {
+                order_id: studentData.code,                    // كود الطلب
+                student_name: studentData.name,                 // اسم الطالب
+                telegram_id: studentData.telegramId,            // معرف تيليجرام
+                stage: document.getElementById('stage').value,  // المرحلة
+                grade: document.getElementById('grade').value,  // الصف
+                subjects: selectedSubjects.join(' | '),         // المواد (مفصولة بـ |)
+                count: selectedSubjects.length,                 // عدد المواد
+                total_amount: document.getElementById('totalAmount').textContent, // الإجمالي
+                browser_fingerprint: getBrowserFingerprint(),   // بصمة المتصفح
+                timestamp: new Date().toISOString()             // الوقت
+            };
+            
+            // ==================== عرض البيانات للتأكد (للتجربة) ====================
+            console.log('البيانات المرסלה:', formData);
+            
+            // 3. إرسال البيانات إلى Google Apps Script
+            const submitBtn = document.querySelector('.submit-btn');
+            const originalBtnText = submitBtn.innerHTML;
+            submitBtn.innerHTML = '<span class="loading"></span> جاري الإرسال...';
+            submitBtn.disabled = true;
+            
+            fetch(SCRIPT_URL, {
+                method: 'POST',
+                mode: 'no-cors', // مهم جداً لتجنب مشاكل CORS
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(formData)
+            })
+            .then(() => {
+                // نجاح الإرسال
+                submitBtn.innerHTML = '✓ تم الإرسال بنجاح';
+                document.getElementById('successModal').style.display = 'flex';
+                
+                // إعادة تعيين الزر بعد 3 ثواني
+                setTimeout(() => {
+                    submitBtn.innerHTML = originalBtnText;
+                    submitBtn.disabled = false;
+                }, 3000);
+                
+                // إعادة تعيين النموذج
+                document.getElementById('orderForm').reset();
+                document.getElementById('totalAmount').textContent = '0';
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('حدث خطأ أثناء الإرسال. الرجاء المحاولة مرة أخرى.');
+                submitBtn.innerHTML = originalBtnText;
+                submitBtn.disabled = false;
+            });
+        }
+        
+        // ==================== الحصول على بصمة المتصفح ====================
+        function getBrowserFingerprint() {
+            const userAgent = navigator.userAgent;
+            const language = navigator.language;
+            const platform = navigator.platform;
+            const screenResolution = screen.width + 'x' + screen.height;
+            const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+            
+            return btoa(userAgent + '|' + language + '|' + platform + '|' + screenResolution + '|' + timezone);
+        }
+        
+        // ==================== إغلاق النافذة المنبثقة ====================
+        function closeModal() {
+            document.getElementById('successModal').style.display = 'none';
+            // يمكن إضافة توجيه لصفحة أخرى هنا
+            // window.location.href = 'https://example.com';
+        }
+    </script>
 </body>
 </html>
