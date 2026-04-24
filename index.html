@@ -33,6 +33,17 @@
             from { opacity: 0; transform: translateY(-10px); }
             to { opacity: 1; transform: translateY(0); }
         }
+        
+        /* ========== مؤشر التحميل ========== */
+        .location-loading {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 10px;
+            text-align: center;
+            margin-bottom: 20px;
+            color: #667eea;
+            font-weight: bold;
+        }
         /* =========================================== */
         
         .student-info { background: #f8f9fa; padding: 15px; border-radius: 10px; margin-bottom: 20px; text-align: center; }
@@ -64,6 +75,12 @@
             <h1>كبسولة تعليمية</h1>
         </div>
         
+        <!-- ========== مؤشر تحديد الموقع ========== -->
+        <div id="locationLoading" class="location-loading">
+            📍 جاري تحديد موقعك تلقائياً...
+        </div>
+        <!-- =========================================== -->
+        
         <!-- ========== صندوق تحية المحافظة ========== -->
         <div id="greetingBox" class="greeting-box"></div>
         <!-- =========================================== -->
@@ -71,45 +88,10 @@
         <div class="student-info">
             <p id="studentName">الطالب: جاري التحميل..</p>
             <p id="orderCodeDisplay">الكود: ...</p>
+            <p id="cityDisplay" style="color: #667eea; display: none;">📍 المدينة: <span id="cityName"></span></p>
         </div>
         
         <form id="orderForm">
-            <!-- ========== حقل المحافظة الجديد ========== -->
-            <div class="form-group">
-                <label>📍 المحافظة / المدينة:</label>
-                <select id="city" required onchange="displayGreeting(this.value)">
-                    <option value="">اختر محافظتك</option>
-                    <option value="cairo">القاهرة</option>
-                    <option value="giza">الجيزة</option>
-                    <option value="alexandria">الإسكندرية</option>
-                    <option value="qalyubia">القليوبية</option>
-                    <option value="monufia">المنوفية</option>
-                    <option value="sharqia">الشرقية</option>
-                    <option value="gharbia">الغربية</option>
-                    <option value="dakahlia">الدقهلية</option>
-                    <option value="beheira">البحيرة</option>
-                    <option value="kafr el sheikh">كفر الشيخ</option>
-                    <option value="damietta">دمياط</option>
-                    <option value="port said">بورسعيد</option>
-                    <option value="ismailia">الإسماعيلية</option>
-                    <option value="suez">السويس</option>
-                    <option value="faiyum">الفيوم</option>
-                    <option value="beni suef">بني سويف</option>
-                    <option value="minya">المنيا</option>
-                    <option value="assiut">أسيوط</option>
-                    <option value="sohag">سوهاج</option>
-                    <option value="qena">قنا</option>
-                    <option value="luxor">الأقصر</option>
-                    <option value="aswan">أسوان</option>
-                    <option value="matrouh">مطروح</option>
-                    <option value="north sinai">شمال سيناء</option>
-                    <option value="south sinai">جنوب سيناء</option>
-                    <option value="red sea">البحر الأحمر</option>
-                    <option value="new valley">الوادي الجديد</option>
-                </select>
-            </div>
-            <!-- =========================================== -->
-            
             <div class="form-group">
                 <label>المرحلة الدراسية:</label>
                 <select id="stage" required>
@@ -153,7 +135,7 @@
 
     <script>
         // ==================== 🔧 إعدادات قابلة للتعديل بسهولة ====================
-        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycby0cgBZ9r5ZAMWOWY3fnniwiGD-sOAXwzibS3uT3MZI_2EPxj1clxhqvACXe1CPt25e/exec';
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw-wxn9jdPG_HlXDGh3g4a76GlmbyXwOaEmD6zjRkMIQR7GaUMGG36YIc2Qih8yqLXF/exec';
         
         // 💰 سعر المادة الواحدة (غيّر الرقم هنا فقط لو تغير السعر مستقبلاً)
         const PRICE_PER_SUBJECT = 20; 
@@ -186,10 +168,42 @@
             'الثالث الثانوي': ['اللغة الإنجليزية', 'اللغة العربية', 'الفلسفة', 'الفيزياء', 'التربية الدينية', 'الحاسب الآلي', 'التاريخ']
         };
 
+        // ️ خريطة التحايا للمحافظات
+        const CITY_GREETINGS = {
+            'Cairo': '🕌 القاهرة: منور يا بطل في العاصمة، بلاد القلعة وشارع المعز!',
+            'Giza': '🔺 الجيزة: أهلاً بيك في أرض الأهرامات وأبوالهول ومدينة الإنتاج!',
+            'Alexandria': '🗼 الإسكندرية: عروس البحر المتوسط.. منورنا في بلاد المكتبة وقايتباي!',
+            'Qalyubia': '⚙️ القليوبية: تحية لأهل بنها والقناطر الخيرية وبلاد الموالح!',
+            'Monufia': '🕯️ المنوفية: أهلاً بيك وبأهل العلم والكرم، بلاد القطن والذرة!',
+            'Sharqia': '🐎 الشرقية: منور يا بطل في أرض الخيول العربية وتل بسطة!',
+            'Gharbia': '🧵 الغربية: تحية لقلعة الغزل والنسيج في المحلة ومنورين أهل طنطا!',
+            'Dakahlia': '🏛️ الدقهلية: أهلاً بيك في عاصمة الطب، ومنورين كل أهل المنصورة!',
+            'Beheira': '🌾 البحيرة: تحية لأهل الكرم وزراعة القطن وأكبر مضارب الأرز!',
+            'Kafr El Sheikh': '🛶 كفر الشيخ: منور يا بطل في بلاد السمك والأرز وبركة غليون!',
+            'Damietta': '⛵ دمياط: أهلاً بيك وبأهل الصناعة والحلويات والسفن الجدعان!',
+            'Port Said': '🚢 بورسعيد: تحية لأهل الباسلة والسمسمية والمنطقة الحرة!',
+            'Ismailia': '🥭 الإسماعيلية: منور يا بطل في بلاد المانجو والفطير المشلتت!',
+            'Suez': '⚓ السويس: تحية لأبطال الغريب وبلاد الزيتون والمأكولات البحرية!',
+            'Faiyum': '⚙️ الفيوم: أهلاً بيك في بلاد وادي الريان وبحيرة قارون والسياحة البيئية!',
+            'Beni Suef': '🧱 بني سويف: تحية لأهل هرم ميدوم وصناع الكيماويات الشطار!',
+            'Minya': '👸 المنيا: أهلاً بيك في عروس الصعيد وبلاد تل العمارنة وبني حسن!',
+            'Assiut': '🦅 أسيوط: تحية لقلعة الصناعة والتعليم في قلب الصعيد!',
+            'Sohag': '⛪ سوهاج: أهلاً بيك وبأهل المنسوجات اليدوية والآثار القبطية العريقة!',
+            'Qena': '🏺 قنا: تحية لأهل معبد دندرة وبلاد العسل الأسود الجدعان!',
+            'Luxor': '🗿 الأقصر: منور يا بطل في بلد ثلث آثار العالم والكرنك ووادي الملوك!',
+            'Aswan': '🌊 أسوان: أهلاً بيك وبأهل النوبة والسد العالي ومعبد أبو سمبل!',
+            'Matrouh': '🏖️ مطروح: أهلاً بيك في عجيبة وكليوباترا وبلاد التمور والزيتون!',
+            'North Sinai': '🌴 شمال سيناء: تحية لأهل العريش والمنتجات البدوية وأشجار الزيتون!',
+            'South Sinai': '⛰️ جنوب سيناء: منور يا بطل في شرم الشيخ وجبل موسى وسانت كاترين!',
+            'Red Sea': '🤿 البحر الأحمر: أهلاً بيك في الغردقة وبلاد الغوص والتعدين!',
+            'New Valley': '🏜️ الوادي الجديد: تحية لأكبر محافظاتنا مساحة، بلاد التمور وواحة سيوة!'
+        };
+
         // ==================== المتغيرات العامة ====================
         let studentData = { name: '', telegramId: '' };
         let currentOrderCode = '';
-        let selectedCity = ''; // متغير لتخزين المدينة المختارة
+        let detectedCity = ''; // 🏙️ المدينة المكتشفة تلقائياً
+        let detectedRegion = ''; // المنطقة/المحافظة
 
         // ==================== عند تحميل الصفحة ====================
         window.addEventListener('DOMContentLoaded', function() {
@@ -199,55 +213,70 @@
             
             document.getElementById('studentName').textContent = 'الطالب: ' + studentData.name;
             
+            // 🏙️ جلب موقع الطالب تلقائياً
+            detectUserLocation();
+            
             // ربط الأحداث
             document.getElementById('stage').addEventListener('change', handleStageChange);
             document.getElementById('grade').addEventListener('change', handleGradeChange);
             document.getElementById('orderForm').addEventListener('submit', submitForm);
         });
 
-        // ==================== 🏛️ دالة عرض تحية المحافظة ====================
-        function displayGreeting(city) {
-            let greetingText = "";
-            const cityMap = {
-                'cairo': '🕌 القاهرة: منور يا بطل في العاصمة، بلاد القلعة وشارع المعز!',
-                'giza': '🔺 الجيزة: أهلاً بيك في أرض الأهرامات وأبوالهول ومدينة الإنتاج!',
-                'qalyubia': '⚙️ القليوبية: تحية لأهل بنها والقناطر الخيرية وبلاد الموالح!',
-                'monufia': '🕯️ المنوفية: أهلاً بيك وبأهل العلم والكرم، بلاد القطن والذرة!',
-                'sharqia': '🐎 الشرقية: منور يا بطل في أرض الخيول العربية وتل بسطة!',
-                'gharbia': '🧵 الغربية: تحية لقلعة الغزل والنسيج في المحلة ومنورين أهل طنطا!',
-                'dakahlia': '🏛️ الدقهلية: أهلاً بيك في عاصمة الطب، ومنورين كل أهل المنصورة!',
-                'beheira': '🌾 البحيرة: تحية لأهل الكرم وزراعة القطن وأكبر مضارب الأرز!',
-                'kafr el sheikh': '🛶 كفر الشيخ: منور يا بطل في بلاد السمك والأرز وبركة غليون!',
-                'damietta': '⛵ دمياط: أهلاً بيك وبأهل الصناعة والحلويات والسفن الجدعان!',
-                'port said': '🚢 بورسعيد: تحية لأهل الباسلة والسمسمية والمنطقة الحرة!',
-                'ismailia': '🥭 الإسماعيلية: منور يا بطل في بلاد المانجو والفطير المشلتت!',
-                'suez': '⚓ السويس: تحية لأبطال الغريب وبلاد الزيتون والمأكولات البحرية!',
-                'faiyum': '⚙️ الفيوم: أهلاً بيك في بلاد وادي الريان وبحيرة قارون والسياحة البيئية!',
-                'beni suef': '🧱 بني سويف: تحية لأهل هرم ميدوم وصناع الكيماويات الشطار!',
-                'minya': '👸 المنيا: أهلاً بيك في عروس الصعيد وبلاد تل العمارنة وبني حسن!',
-                'assiut': '🦅 أسيوط: تحية لقلعة الصناعة والتعليم في قلب الصعيد!',
-                'sohag': '⛪ سوهاج: أهلاً بيك وبأهل المنسوجات اليدوية والآثار القبطية العريقة!',
-                'qena': '🏺 قنا: تحية لأهل معبد دندرة وبلاد العسل الأسود الجدعان!',
-                'luxor': '🗿 الأقصر: منور يا بطل في بلد ثلث آثار العالم والكرنك ووادي الملوك!',
-                'aswan': '🌊 أسوان: أهلاً بيك وبأهل النوبة والسد العالي ومعبد أبو سمبل!',
-                'alexandria': '🗼 الإسكندرية: عروس البحر المتوسط.. منورنا في بلاد المكتبة وقايتباي!',
-                'matrouh': '🏖️ مطروح: أهلاً بيك في عجيبة وكليوباترا وبلاد التمور والزيتون!',
-                'north sinai': '🌴 شمال سيناء: تحية لأهل العريش والمنتجات البدوية وأشجار الزيتون!',
-                'south sinai': '⛰️ جنوب سيناء: منور يا بطل في شرم الشيخ وجبل موسى وسانت كاترين!',
-                'red sea': '🤿 البحر الأحمر: أهلاً بيك في الغردقة وبلاد الغوص والتعدين!',
-                'new valley': '🏜️ الوادي الجديد: تحية لأكبر محافظاتنا مساحة، بلاد التمور وواحة سيوة!'
-            };
+        // ==================== 🌍 دالة تحديد موقع المستخدم تلقائياً ====================
+        async function detectUserLocation() {
+            try {
+                // استخدام ipapi.co API (مجاني - لا يحتاج API Key للاستخدام المحدود)
+                const response = await fetch('https://ipapi.co/json/');
+                const data = await response.json();
+                
+                if (data.error) {
+                    throw new Error('Failed to get location');
+                }
+                
+                // استخراج البيانات
+                detectedCity = data.city || 'غير معروف';
+                detectedRegion = data.region || data.region_code || 'غير معروف';
+                const country = data.country_name || 'مصر';
+                
+                // عرض المدينة في الصفحة
+                document.getElementById('cityName').textContent = `${detectedCity} (${detectedRegion})`;
+                document.getElementById('cityDisplay').style.display = 'block';
+                
+                // إخفاء مؤشر التحميل
+                document.getElementById('locationLoading').style.display = 'none';
+                
+                // عرض التحية المخصصة
+                displayGreeting(detectedRegion);
+                
+                console.log('📍 Location detected:', {
+                    city: detectedCity,
+                    region: detectedRegion,
+                    country: country
+                });
+                
+            } catch (error) {
+                console.error('Error detecting location:', error);
+                
+                // في حالة الفشل، نستخدم بيانات افتراضية
+                detectedCity = 'غير معروف';
+                detectedRegion = 'غير معروف';
+                
+                document.getElementById('cityName').textContent = 'تعذر تحديد الموقع';
+                document.getElementById('cityDisplay').style.display = 'block';
+                document.getElementById('locationLoading').style.display = 'none';
+                document.getElementById('locationLoading').textContent = '⚠️ تعذر تحديد موقعك تلقائياً';
+                document.getElementById('locationLoading').style.color = '#f5576c';
+            }
+        }
 
-            let cityLower = city.toLowerCase();
-            // إذا لم تكن المدينة في القائمة، تظهر تحية عامة
-            greetingText = cityMap[cityLower] || `✨ أهلاً بك يا بطل وبكل أهل ${city} الكرام في الكبسولة التعليمية!`;
+        // ==================== 🏛️ دالة عرض تحية المحافظة ====================
+        function displayGreeting(region) {
+            let greetingText = CITY_GREETINGS[region] || 
+                `✨ أهلاً بك يا بطل من ${region} في الكبسولة التعليمية!`;
             
             const greetingBox = document.getElementById('greetingBox');
             greetingBox.innerText = greetingText;
             greetingBox.classList.add('show');
-            
-            // تخزين المدينة المختارة
-            selectedCity = city;
         }
         // ======================================================================
 
@@ -318,26 +347,22 @@
         function submitForm(e) {
             e.preventDefault();
             
-            const city = document.getElementById('city').value;
             const stage = document.getElementById('stage').value;
             const grade = document.getElementById('grade').value;
             const subjects = Array.from(document.querySelectorAll('input[name="subject"]:checked')).map(cb => cb.value);
-            
-            if (!city) {
-                alert('الرجاء اختيار المحافظة/المدينة');
-                return;
-            }
             
             if (!stage || !grade || subjects.length === 0) {
                 alert('الرجاء استكمال اختيار المرحلة والصف ومادة واحدة على الأقل');
                 return;
             }
             
+            // تجهيز البيانات للإرسال
             const formData = {
                 order_id: currentOrderCode,
                 student_name: studentData.name,
                 telegram_id: studentData.telegramId,
-                city: city,  // 🏙️ إضافة المدينة للبيانات المرسلة
+                city: detectedCity,        // 🏙️ المدينة المكتشفة تلقائياً
+                region: detectedRegion,    // 🏙️ المنطقة/المحافظة
                 stage: stage,
                 grade: grade,
                 subjects: subjects.join(' | '),
@@ -347,7 +372,7 @@
                 timestamp: new Date().toISOString()
             };
             
-            console.log('البيانات المرسلة:', formData);
+            console.log('📤 البيانات المرسلة:', formData);
             
             const btn = document.querySelector('.submit-btn');
             btn.innerHTML = '<span class="loading"></span> جاري الإرسال...';
@@ -370,9 +395,14 @@
                     document.getElementById('grade').innerHTML = '<option value="">اختر الصف أولاً</option>';
                     document.getElementById('orderCodeDisplay').textContent = 'الكود: ...';
                     document.getElementById('totalAmount').textContent = '0';
-                    document.getElementById('greetingBox').classList.remove('show'); // إخفاء التحية
+                    document.getElementById('greetingBox').classList.remove('show');
+                    document.getElementById('cityDisplay').style.display = 'none';
+                    document.getElementById('locationLoading').style.display = 'block';
+                    document.getElementById('locationLoading').textContent = '📍 جاري تحديد موقعك تلقائياً...';
+                    document.getElementById('locationLoading').style.color = '#667eea';
                     currentOrderCode = '';
-                    selectedCity = '';
+                    detectedCity = '';
+                    detectedRegion = '';
                 }, 3000);
             })
             .catch(err => {
