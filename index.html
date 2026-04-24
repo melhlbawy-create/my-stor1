@@ -10,6 +10,31 @@
         .container { max-width: 600px; margin: 0 auto; background: white; border-radius: 20px; padding: 30px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); }
         .header { text-align: center; margin-bottom: 30px; padding-bottom: 20px; border-bottom: 3px solid #667eea; }
         .header h1 { color: #667eea; font-size: 2em; margin-bottom: 10px; }
+        
+        /* ========== تنسيق تحية المحافظة ========== */
+        .greeting-box {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            padding: 15px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            text-align: center;
+            font-size: 1.1em;
+            font-weight: bold;
+            display: none;
+            animation: fadeIn 0.5s ease-in;
+        }
+        
+        .greeting-box.show {
+            display: block;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        /* =========================================== */
+        
         .student-info { background: #f8f9fa; padding: 15px; border-radius: 10px; margin-bottom: 20px; text-align: center; }
         .student-info p { margin: 5px 0; font-weight: bold; }
         .form-group { margin-bottom: 20px; }
@@ -39,12 +64,52 @@
             <h1>كبسولة تعليمية</h1>
         </div>
         
+        <!-- ========== صندوق تحية المحافظة ========== -->
+        <div id="greetingBox" class="greeting-box"></div>
+        <!-- =========================================== -->
+        
         <div class="student-info">
             <p id="studentName">الطالب: جاري التحميل..</p>
             <p id="orderCodeDisplay">الكود: ...</p>
         </div>
         
         <form id="orderForm">
+            <!-- ========== حقل المحافظة الجديد ========== -->
+            <div class="form-group">
+                <label>📍 المحافظة / المدينة:</label>
+                <select id="city" required onchange="displayGreeting(this.value)">
+                    <option value="">اختر محافظتك</option>
+                    <option value="cairo">القاهرة</option>
+                    <option value="giza">الجيزة</option>
+                    <option value="alexandria">الإسكندرية</option>
+                    <option value="qalyubia">القليوبية</option>
+                    <option value="monufia">المنوفية</option>
+                    <option value="sharqia">الشرقية</option>
+                    <option value="gharbia">الغربية</option>
+                    <option value="dakahlia">الدقهلية</option>
+                    <option value="beheira">البحيرة</option>
+                    <option value="kafr el sheikh">كفر الشيخ</option>
+                    <option value="damietta">دمياط</option>
+                    <option value="port said">بورسعيد</option>
+                    <option value="ismailia">الإسماعيلية</option>
+                    <option value="suez">السويس</option>
+                    <option value="faiyum">الفيوم</option>
+                    <option value="beni suef">بني سويف</option>
+                    <option value="minya">المنيا</option>
+                    <option value="assiut">أسيوط</option>
+                    <option value="sohag">سوهاج</option>
+                    <option value="qena">قنا</option>
+                    <option value="luxor">الأقصر</option>
+                    <option value="aswan">أسوان</option>
+                    <option value="matrouh">مطروح</option>
+                    <option value="north sinai">شمال سيناء</option>
+                    <option value="south sinai">جنوب سيناء</option>
+                    <option value="red sea">البحر الأحمر</option>
+                    <option value="new valley">الوادي الجديد</option>
+                </select>
+            </div>
+            <!-- =========================================== -->
+            
             <div class="form-group">
                 <label>المرحلة الدراسية:</label>
                 <select id="stage" required>
@@ -124,6 +189,7 @@
         // ==================== المتغيرات العامة ====================
         let studentData = { name: '', telegramId: '' };
         let currentOrderCode = '';
+        let selectedCity = ''; // متغير لتخزين المدينة المختارة
 
         // ==================== عند تحميل الصفحة ====================
         window.addEventListener('DOMContentLoaded', function() {
@@ -138,6 +204,52 @@
             document.getElementById('grade').addEventListener('change', handleGradeChange);
             document.getElementById('orderForm').addEventListener('submit', submitForm);
         });
+
+        // ==================== 🏛️ دالة عرض تحية المحافظة ====================
+        function displayGreeting(city) {
+            let greetingText = "";
+            const cityMap = {
+                'cairo': '🕌 القاهرة: منور يا بطل في العاصمة، بلاد القلعة وشارع المعز!',
+                'giza': '🔺 الجيزة: أهلاً بيك في أرض الأهرامات وأبوالهول ومدينة الإنتاج!',
+                'qalyubia': '⚙️ القليوبية: تحية لأهل بنها والقناطر الخيرية وبلاد الموالح!',
+                'monufia': '🕯️ المنوفية: أهلاً بيك وبأهل العلم والكرم، بلاد القطن والذرة!',
+                'sharqia': '🐎 الشرقية: منور يا بطل في أرض الخيول العربية وتل بسطة!',
+                'gharbia': '🧵 الغربية: تحية لقلعة الغزل والنسيج في المحلة ومنورين أهل طنطا!',
+                'dakahlia': '🏛️ الدقهلية: أهلاً بيك في عاصمة الطب، ومنورين كل أهل المنصورة!',
+                'beheira': '🌾 البحيرة: تحية لأهل الكرم وزراعة القطن وأكبر مضارب الأرز!',
+                'kafr el sheikh': '🛶 كفر الشيخ: منور يا بطل في بلاد السمك والأرز وبركة غليون!',
+                'damietta': '⛵ دمياط: أهلاً بيك وبأهل الصناعة والحلويات والسفن الجدعان!',
+                'port said': '🚢 بورسعيد: تحية لأهل الباسلة والسمسمية والمنطقة الحرة!',
+                'ismailia': '🥭 الإسماعيلية: منور يا بطل في بلاد المانجو والفطير المشلتت!',
+                'suez': '⚓ السويس: تحية لأبطال الغريب وبلاد الزيتون والمأكولات البحرية!',
+                'faiyum': '⚙️ الفيوم: أهلاً بيك في بلاد وادي الريان وبحيرة قارون والسياحة البيئية!',
+                'beni suef': '🧱 بني سويف: تحية لأهل هرم ميدوم وصناع الكيماويات الشطار!',
+                'minya': '👸 المنيا: أهلاً بيك في عروس الصعيد وبلاد تل العمارنة وبني حسن!',
+                'assiut': '🦅 أسيوط: تحية لقلعة الصناعة والتعليم في قلب الصعيد!',
+                'sohag': '⛪ سوهاج: أهلاً بيك وبأهل المنسوجات اليدوية والآثار القبطية العريقة!',
+                'qena': '🏺 قنا: تحية لأهل معبد دندرة وبلاد العسل الأسود الجدعان!',
+                'luxor': '🗿 الأقصر: منور يا بطل في بلد ثلث آثار العالم والكرنك ووادي الملوك!',
+                'aswan': '🌊 أسوان: أهلاً بيك وبأهل النوبة والسد العالي ومعبد أبو سمبل!',
+                'alexandria': '🗼 الإسكندرية: عروس البحر المتوسط.. منورنا في بلاد المكتبة وقايتباي!',
+                'matrouh': '🏖️ مطروح: أهلاً بيك في عجيبة وكليوباترا وبلاد التمور والزيتون!',
+                'north sinai': '🌴 شمال سيناء: تحية لأهل العريش والمنتجات البدوية وأشجار الزيتون!',
+                'south sinai': '⛰️ جنوب سيناء: منور يا بطل في شرم الشيخ وجبل موسى وسانت كاترين!',
+                'red sea': '🤿 البحر الأحمر: أهلاً بيك في الغردقة وبلاد الغوص والتعدين!',
+                'new valley': '🏜️ الوادي الجديد: تحية لأكبر محافظاتنا مساحة، بلاد التمور وواحة سيوة!'
+            };
+
+            let cityLower = city.toLowerCase();
+            // إذا لم تكن المدينة في القائمة، تظهر تحية عامة
+            greetingText = cityMap[cityLower] || `✨ أهلاً بك يا بطل وبكل أهل ${city} الكرام في الكبسولة التعليمية!`;
+            
+            const greetingBox = document.getElementById('greetingBox');
+            greetingBox.innerText = greetingText;
+            greetingBox.classList.add('show');
+            
+            // تخزين المدينة المختارة
+            selectedCity = city;
+        }
+        // ======================================================================
 
         // ==================== عند تغيير المرحلة ====================
         function handleStageChange(e) {
@@ -206,9 +318,15 @@
         function submitForm(e) {
             e.preventDefault();
             
+            const city = document.getElementById('city').value;
             const stage = document.getElementById('stage').value;
             const grade = document.getElementById('grade').value;
             const subjects = Array.from(document.querySelectorAll('input[name="subject"]:checked')).map(cb => cb.value);
+            
+            if (!city) {
+                alert('الرجاء اختيار المحافظة/المدينة');
+                return;
+            }
             
             if (!stage || !grade || subjects.length === 0) {
                 alert('الرجاء استكمال اختيار المرحلة والصف ومادة واحدة على الأقل');
@@ -219,6 +337,7 @@
                 order_id: currentOrderCode,
                 student_name: studentData.name,
                 telegram_id: studentData.telegramId,
+                city: city,  // 🏙️ إضافة المدينة للبيانات المرسلة
                 stage: stage,
                 grade: grade,
                 subjects: subjects.join(' | '),
@@ -251,7 +370,9 @@
                     document.getElementById('grade').innerHTML = '<option value="">اختر الصف أولاً</option>';
                     document.getElementById('orderCodeDisplay').textContent = 'الكود: ...';
                     document.getElementById('totalAmount').textContent = '0';
+                    document.getElementById('greetingBox').classList.remove('show'); // إخفاء التحية
                     currentOrderCode = '';
+                    selectedCity = '';
                 }, 3000);
             })
             .catch(err => {
