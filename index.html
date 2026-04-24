@@ -135,7 +135,7 @@
 
     <script>
         // ==================== 🔧 إعدادات قابلة للتعديل بسهولة ====================
-        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxwBoB_TZ_NpgjBTRm7fynJMbb7jSL89wfu5reF2o98Upzz8ZpNxg3C08PNkwkpY-Lr/exec';
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzssaZcYfJZBevk-hqrfwVvkzCBAi1dAQOVxBVpcnsolwgGCSyFRMOM0b9ZEfkPhEsR/exec';
         
         // 💰 سعر المادة الواحدة
         const PRICE_PER_SUBJECT = 20; 
@@ -228,18 +228,15 @@
                 const governorate = await getGovernorateFromIP();
                 
                 if (governorate) {
-                    detectedGovernorate = governorate;
-                    
-                    // عرض المحافظة في الصفحة
-                    document.getElementById('cityName').textContent = detectedGovernorate;
-                    document.getElementById('cityDisplay').style.display = 'block';
-                    
                     // إخفاء مؤشر التحميل
                     document.getElementById('locationLoading').style.display = 'none';
-                    
-                    // عرض التحية المخصصة
-                    displayGovernorateGreeting(detectedGovernorate);
-                    
+
+                    // عرض التحية — تتولى هي تعيين cityName وdetectedGovernorate بالعربي
+                    displayGovernorateGreeting(governorate);
+
+                    // إظهار حقل المحافظة
+                    document.getElementById('cityDisplay').style.display = 'block';
+
                     console.log('📍 المحافظة المكتشفة:', detectedGovernorate);
                 } else {
                     throw new Error('Could not detect governorate');
@@ -259,51 +256,207 @@
             }
         }
 
+        // ==================== خريطة توحيد أسماء المحافظات ====================
+        // تحوّل كل الأشكال المحتملة القادمة من APIs إلى المفتاح الموحّد في GOVERNORATE_GREETINGS
+        const GOVERNORATE_MAP = {
+            // القاهرة
+            'cairo': 'Cairo', 'al qahirah': 'Cairo', 'al-qahirah': 'Cairo',
+            'qahira': 'Cairo', 'القاهرة': 'Cairo',
+
+            // الجيزة
+            'giza': 'Giza', 'al jizah': 'Giza', 'al-jizah': 'Giza',
+            'gizeh': 'Giza', 'الجيزة': 'Giza',
+
+            // الإسكندرية
+            'alexandria': 'Alexandria', 'al iskandariyah': 'Alexandria',
+            'al-iskandariyah': 'Alexandria', 'الإسكندرية': 'Alexandria',
+            'اسكندرية': 'Alexandria',
+
+            // القليوبية
+            'qalyubia': 'Qalyubia', 'al qalyubiyah': 'Qalyubia',
+            'qalyubiyya': 'Qalyubia', 'القليوبية': 'Qalyubia',
+
+            // المنوفية
+            'monufia': 'Monufia', 'al minufiyah': 'Monufia',
+            'menoufia': 'Monufia', 'menofia': 'Monufia', 'المنوفية': 'Monufia',
+
+            // الشرقية
+            'sharqia': 'Sharqia', 'ash sharqiyah': 'Sharqia',
+            'al sharqiyya': 'Sharqia', 'sharkia': 'Sharqia', 'الشرقية': 'Sharqia',
+
+            // الغربية
+            'gharbia': 'Gharbia', 'al gharbiyah': 'Gharbia',
+            'gharbeya': 'Gharbia', 'الغربية': 'Gharbia',
+
+            // الدقهلية
+            'dakahlia': 'Dakahlia', 'ad daqahliyah': 'Dakahlia',
+            'daqahliya': 'Dakahlia', 'الدقهلية': 'Dakahlia',
+
+            // البحيرة
+            'beheira': 'Beheira', 'al buhayrah': 'Beheira',
+            'buhaira': 'Beheira', 'البحيرة': 'Beheira',
+
+            // كفر الشيخ
+            'kafr el sheikh': 'Kafr El Sheikh', 'kafr ash shaykh': 'Kafr El Sheikh',
+            'kafr el-sheikh': 'Kafr El Sheikh', 'كفر الشيخ': 'Kafr El Sheikh',
+
+            // دمياط
+            'damietta': 'Damietta', 'dumyat': 'Damietta',
+            'دمياط': 'Damietta',
+
+            // بورسعيد
+            'port said': 'Port Said', 'bur said': 'Port Said',
+            'port saïd': 'Port Said', 'بورسعيد': 'Port Said',
+
+            // الإسماعيلية
+            'ismailia': 'Ismailia', 'al isma\'iliyah': 'Ismailia',
+            'ismailiya': 'Ismailia', 'الإسماعيلية': 'Ismailia',
+
+            // السويس
+            'suez': 'Suez', 'as suways': 'Suez',
+            'السويس': 'Suez',
+
+            // الفيوم
+            'faiyum': 'Faiyum', 'al fayyum': 'Faiyum',
+            'fayoum': 'Faiyum', 'fayum': 'Faiyum', 'الفيوم': 'Faiyum',
+
+            // بني سويف
+            'beni suef': 'Beni Suef', 'bani suwayf': 'Beni Suef',
+            'beni-suef': 'Beni Suef', 'بني سويف': 'Beni Suef',
+
+            // المنيا
+            'minya': 'Minya', 'al minya': 'Minya',
+            'menia': 'Minya', 'المنيا': 'Minya',
+
+            // أسيوط
+            'assiut': 'Assiut', 'asyut': 'Assiut', 'asyu\'t': 'Assiut',
+            'assuit': 'Assiut', 'أسيوط': 'Assiut',
+
+            // سوهاج
+            'sohag': 'Sohag', 'suhaj': 'Sohag',
+            'sawhaj': 'Sohag', 'سوهاج': 'Sohag',
+
+            // قنا
+            'qena': 'Qena', 'qina': 'Qena',
+            'qina\'': 'Qena', 'قنا': 'Qena',
+
+            // الأقصر
+            'luxor': 'Luxor', 'al uqsur': 'Luxor',
+            'الأقصر': 'Luxor', 'اقصر': 'Luxor',
+
+            // أسوان
+            'aswan': 'Aswan', 'aswān': 'Aswan',
+            'أسوان': 'Aswan',
+
+            // مطروح
+            'matrouh': 'Matrouh', 'matruh': 'Matrouh',
+            'mersa matruh': 'Matrouh', 'مطروح': 'Matrouh',
+
+            // شمال سيناء
+            'north sinai': 'North Sinai', 'shamal sina\'': 'North Sinai',
+            'north sinai governorate': 'North Sinai', 'شمال سيناء': 'North Sinai',
+
+            // جنوب سيناء
+            'south sinai': 'South Sinai', 'janub sina\'': 'South Sinai',
+            'south sinai governorate': 'South Sinai', 'جنوب سيناء': 'South Sinai',
+
+            // البحر الأحمر
+            'red sea': 'Red Sea', 'al bahr al ahmar': 'Red Sea',
+            'البحر الأحمر': 'Red Sea',
+
+            // الوادي الجديد
+            'new valley': 'New Valley', 'al wadi al jadid': 'New Valley',
+            'الوادي الجديد': 'New Valley'
+        };
+
+        // دالة مساعدة: تطبيع اسم المحافظة إلى المفتاح الموحّد
+        function normalizeGovernorate(rawName) {
+            if (!rawName) return null;
+            const key = rawName.trim().toLowerCase();
+            return GOVERNORATE_MAP[key] || null;
+        }
+
         // ==================== جلب المحافظة من IP ====================
         async function getGovernorateFromIP() {
-            // قائمة بالخدمات الموثوقة
             const services = [
-                'https://ipapi.co/json/',
-                'https://ipwho.is/',
-                'https://ipapi.is/json/'
+                {
+                    url: 'https://ipapi.co/json/',
+                    extract: (d) => d.region || d.city
+                },
+                {
+                    url: 'https://ipwho.is/',
+                    extract: (d) => d.region || d.city
+                },
+                {
+                    url: 'https://ipapi.is/json/',
+                    extract: (d) => (d.location && (d.location.state || d.location.city)) || d.region
+                }
             ];
-            
-            for (const service of services) {
+
+            for (const svc of services) {
                 try {
-                    const response = await fetch(service);
+                    const response = await fetch(svc.url, { signal: AbortSignal.timeout(5000) });
+                    if (!response.ok) continue;
                     const data = await response.json();
-                    
-                    let governorate = null;
-                    
-                    // استخراج المحافظة من الخدمة
-                    if (service.includes('ipapi.co')) {
-                        governorate = data.region; // القاهرة، الجيزة، إلخ
-                    } else if (service.includes('ipwho.is')) {
-                        governorate = data.region; 
-                    } else if (service.includes('ipapi.is')) {
-                        governorate = data.region;
+
+                    // تأكد أن البيانات تخص مصر
+                    const country = (data.country_code || data.country || (data.location && data.location.country_code2) || '').toUpperCase();
+                    if (country && country !== 'EG') {
+                        console.warn(`Non-Egypt IP detected (${country}), skipping`);
+                        // لا نتجاهل بالكامل — ربما VPN، نكمل المحاولة
                     }
-                    
-                    // التحقق من أن المحافظة ليست فارغة
-                    if (governorate && governorate.trim() !== '') {
-                        // تطبيع اسم المحافظة (إزالة المسافات الزائدة)
-                        return governorate.trim();
+
+                    const raw = svc.extract(data);
+                    console.log(`🌐 ${svc.url} → raw: "${raw}"`);
+
+                    if (!raw || raw.trim() === '') continue;
+
+                    // 1) حاول التطبيع أولاً
+                    const normalized = normalizeGovernorate(raw);
+                    if (normalized) {
+                        console.log(`✅ normalized: "${normalized}"`);
+                        return normalized;
                     }
-                    
+
+                    // 2) إذا لم يُطابَق، أعد القيمة الخام لعرضها (أفضل من لا شيء)
+                    console.warn(`⚠️ "${raw}" not in GOVERNORATE_MAP, using raw`);
+                    return raw.trim();
+
                 } catch (err) {
-                    console.warn(`Service ${service} failed, trying next...`);
+                    console.warn(`Service ${svc.url} failed:`, err.message);
                     continue;
                 }
             }
-            
+
             return null;
         }
 
         // ==================== 🏛️ دالة عرض تحية المحافظة ====================
+        // استخراج الاسم العربي من نص التحية
+        function extractArabicName(greetingText) {
+            // مثال: "🕌 القاهرة: منور..." → "القاهرة"
+            const match = greetingText.match(/[\u0600-\u06FF\s]+/);
+            if (match) {
+                const parts = match[0].trim().split(':');
+                return parts[0].trim();
+            }
+            return greetingText;
+        }
+
         function displayGovernorateGreeting(governorate) {
-            let greetingText = GOVERNORATE_GREETINGS[governorate] || 
+            const greetingText = GOVERNORATE_GREETINGS[governorate] ||
                 `✨ أهلاً بك يا بطل من ${governorate} في الكبسولة التعليمية!`;
-            
+
+            // استخراج الاسم العربي لعرضه وإرساله للشيت
+            const arabicName = GOVERNORATE_GREETINGS[governorate]
+                ? extractArabicName(greetingText)
+                : governorate;
+
+            // تحديث حقل المحافظة بالاسم العربي
+            document.getElementById('cityName').textContent = arabicName;
+            // حفظ الاسم العربي ليُرسل للشيت بدلاً من الكود الإنجليزي
+            detectedGovernorate = arabicName;
+
             const greetingBox = document.getElementById('greetingBox');
             greetingBox.innerText = greetingText;
             greetingBox.classList.add('show');
