@@ -77,7 +77,7 @@
         
         <!-- ========== مؤشر تحديد الموقع ========== -->
         <div id="locationLoading" class="location-loading">
-            📍 جاري تحديد موقعك تلقائياً...
+            📍 جاري تحديد محافظتك تلقائياً...
         </div>
         <!-- =========================================== -->
         
@@ -88,7 +88,7 @@
         <div class="student-info">
             <p id="studentName">الطالب: جاري التحميل..</p>
             <p id="orderCodeDisplay">الكود: ...</p>
-            <p id="cityDisplay" style="color: #667eea; display: none;">📍 المدينة: <span id="cityName"></span></p>
+            <p id="cityDisplay" style="color: #667eea; display: none;">📍 المحافظة: <span id="cityName"></span></p>
         </div>
         
         <form id="orderForm">
@@ -135,9 +135,9 @@
 
     <script>
         // ==================== 🔧 إعدادات قابلة للتعديل بسهولة ====================
-        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw-wxn9jdPG_HlXDGh3g4a76GlmbyXwOaEmD6zjRkMIQR7GaUMGG36YIc2Qih8yqLXF/exec';
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxwBoB_TZ_NpgjBTRm7fynJMbb7jSL89wfu5reF2o98Upzz8ZpNxg3C08PNkwkpY-Lr/exec';
         
-        // 💰 سعر المادة الواحدة (غيّر الرقم هنا فقط لو تغير السعر مستقبلاً)
+        // 💰 سعر المادة الواحدة
         const PRICE_PER_SUBJECT = 20; 
 
         // 🔤 حرف المرحلة للكود
@@ -154,7 +154,7 @@
             'المرحلة الثانوية': ['الأول الثانوي', 'الثاني الثانوي', 'الثالث الثانوي']
         };
 
-        // 📖 المواد المتاحة لكل صف (لتعديل المواد مستقبلاً: عدّل هذا الكائن فقط)
+        // 📖 المواد المتاحة لكل صف
         const SUBJECTS_BY_GRADE = {
             'الثالث الابتدائي': ['اللغة الإنجليزية', 'التربية الدينية', 'اللغة العربية', 'الرياضيات'],
             'الرابع الابتدائي': ['اللغة الإنجليزية', 'التربية الدينية', 'اللغة العربية', 'الدراسات', 'العلوم', 'الحاسب الآلي'],
@@ -168,8 +168,8 @@
             'الثالث الثانوي': ['اللغة الإنجليزية', 'اللغة العربية', 'الفلسفة', 'الفيزياء', 'التربية الدينية', 'الحاسب الآلي', 'التاريخ']
         };
 
-        // ️ خريطة التحايا للمحافظات
-        const CITY_GREETINGS = {
+        // ️ خريطة التحايا للمحافظات المصرية
+        const GOVERNORATE_GREETINGS = {
             'Cairo': '🕌 القاهرة: منور يا بطل في العاصمة، بلاد القلعة وشارع المعز!',
             'Giza': '🔺 الجيزة: أهلاً بيك في أرض الأهرامات وأبوالهول ومدينة الإنتاج!',
             'Alexandria': '🗼 الإسكندرية: عروس البحر المتوسط.. منورنا في بلاد المكتبة وقايتباي!',
@@ -202,8 +202,7 @@
         // ==================== المتغيرات العامة ====================
         let studentData = { name: '', telegramId: '' };
         let currentOrderCode = '';
-        let detectedCity = ''; // 🏙️ المدينة المكتشفة تلقائياً
-        let detectedRegion = ''; // المنطقة/المحافظة
+        let detectedGovernorate = ''; // 🏙️ المحافظة المكتشفة
 
         // ==================== عند تحميل الصفحة ====================
         window.addEventListener('DOMContentLoaded', function() {
@@ -213,8 +212,8 @@
             
             document.getElementById('studentName').textContent = 'الطالب: ' + studentData.name;
             
-            // 🏙️ جلب موقع الطالب تلقائياً
-            detectUserLocation();
+            // 🏙️ جلب المحافظة تلقائياً
+            detectGovernorate();
             
             // ربط الأحداث
             document.getElementById('stage').addEventListener('change', handleStageChange);
@@ -222,57 +221,88 @@
             document.getElementById('orderForm').addEventListener('submit', submitForm);
         });
 
-        // ==================== 🌍 دالة تحديد موقع المستخدم تلقائياً ====================
-        async function detectUserLocation() {
+        // ==================== 🌍 دالة تحديد المحافظة بدقة ====================
+        async function detectGovernorate() {
             try {
-                // استخدام ipapi.co API (مجاني - لا يحتاج API Key للاستخدام المحدود)
-                const response = await fetch('https://ipapi.co/json/');
-                const data = await response.json();
+                // محاولة استخدام خدمات متعددة لضمان الدقة
+                const governorate = await getGovernorateFromIP();
                 
-                if (data.error) {
-                    throw new Error('Failed to get location');
+                if (governorate) {
+                    detectedGovernorate = governorate;
+                    
+                    // عرض المحافظة في الصفحة
+                    document.getElementById('cityName').textContent = detectedGovernorate;
+                    document.getElementById('cityDisplay').style.display = 'block';
+                    
+                    // إخفاء مؤشر التحميل
+                    document.getElementById('locationLoading').style.display = 'none';
+                    
+                    // عرض التحية المخصصة
+                    displayGovernorateGreeting(detectedGovernorate);
+                    
+                    console.log('📍 المحافظة المكتشفة:', detectedGovernorate);
+                } else {
+                    throw new Error('Could not detect governorate');
                 }
                 
-                // استخراج البيانات
-                detectedCity = data.city || 'غير معروف';
-                detectedRegion = data.region || data.region_code || 'غير معروف';
-                const country = data.country_name || 'مصر';
-                
-                // عرض المدينة في الصفحة
-                document.getElementById('cityName').textContent = `${detectedCity} (${detectedRegion})`;
-                document.getElementById('cityDisplay').style.display = 'block';
-                
-                // إخفاء مؤشر التحميل
-                document.getElementById('locationLoading').style.display = 'none';
-                
-                // عرض التحية المخصصة
-                displayGreeting(detectedRegion);
-                
-                console.log('📍 Location detected:', {
-                    city: detectedCity,
-                    region: detectedRegion,
-                    country: country
-                });
-                
             } catch (error) {
-                console.error('Error detecting location:', error);
+                console.error('Error detecting governorate:', error);
                 
-                // في حالة الفشل، نستخدم بيانات افتراضية
-                detectedCity = 'غير معروف';
-                detectedRegion = 'غير معروف';
+                // في حالة الفشل، نستخدم قيمة افتراضية
+                detectedGovernorate = 'غير معروف';
                 
-                document.getElementById('cityName').textContent = 'تعذر تحديد الموقع';
+                document.getElementById('cityName').textContent = 'تعذر تحديد المحافظة';
                 document.getElementById('cityDisplay').style.display = 'block';
                 document.getElementById('locationLoading').style.display = 'none';
-                document.getElementById('locationLoading').textContent = '⚠️ تعذر تحديد موقعك تلقائياً';
+                document.getElementById('locationLoading').textContent = '⚠️ تعذر تحديد محافظتك';
                 document.getElementById('locationLoading').style.color = '#f5576c';
             }
         }
 
+        // ==================== جلب المحافظة من IP ====================
+        async function getGovernorateFromIP() {
+            // قائمة بالخدمات الموثوقة
+            const services = [
+                'https://ipapi.co/json/',
+                'https://ipwho.is/',
+                'https://ipapi.is/json/'
+            ];
+            
+            for (const service of services) {
+                try {
+                    const response = await fetch(service);
+                    const data = await response.json();
+                    
+                    let governorate = null;
+                    
+                    // استخراج المحافظة من الخدمة
+                    if (service.includes('ipapi.co')) {
+                        governorate = data.region; // القاهرة، الجيزة، إلخ
+                    } else if (service.includes('ipwho.is')) {
+                        governorate = data.region; 
+                    } else if (service.includes('ipapi.is')) {
+                        governorate = data.region;
+                    }
+                    
+                    // التحقق من أن المحافظة ليست فارغة
+                    if (governorate && governorate.trim() !== '') {
+                        // تطبيع اسم المحافظة (إزالة المسافات الزائدة)
+                        return governorate.trim();
+                    }
+                    
+                } catch (err) {
+                    console.warn(`Service ${service} failed, trying next...`);
+                    continue;
+                }
+            }
+            
+            return null;
+        }
+
         // ==================== 🏛️ دالة عرض تحية المحافظة ====================
-        function displayGreeting(region) {
-            let greetingText = CITY_GREETINGS[region] || 
-                `✨ أهلاً بك يا بطل من ${region} في الكبسولة التعليمية!`;
+        function displayGovernorateGreeting(governorate) {
+            let greetingText = GOVERNORATE_GREETINGS[governorate] || 
+                `✨ أهلاً بك يا بطل من ${governorate} في الكبسولة التعليمية!`;
             
             const greetingBox = document.getElementById('greetingBox');
             greetingBox.innerText = greetingText;
@@ -286,13 +316,11 @@
             const gradeSelect = document.getElementById('grade');
             const subjectsContainer = document.getElementById('subjectsContainer');
             
-            // تفريغ القوائم
             gradeSelect.innerHTML = '<option value="">اختر الصف</option>';
             subjectsContainer.innerHTML = '';
             document.getElementById('totalAmount').textContent = '0';
             
             if (stage && GRADES_BY_STAGE[stage]) {
-                // ملء قائمة الصفوف
                 GRADES_BY_STAGE[stage].forEach(grade => {
                     const opt = document.createElement('option');
                     opt.value = grade;
@@ -300,7 +328,6 @@
                     gradeSelect.appendChild(opt);
                 });
                 
-                // توليد كود جديد
                 generateOrderCode(stage);
             } else {
                 document.getElementById('orderCodeDisplay').textContent = 'الكود: ...';
@@ -356,13 +383,11 @@
                 return;
             }
             
-            // تجهيز البيانات للإرسال
             const formData = {
                 order_id: currentOrderCode,
                 student_name: studentData.name,
                 telegram_id: studentData.telegramId,
-                city: detectedCity,        // 🏙️ المدينة المكتشفة تلقائياً
-                region: detectedRegion,    // 🏙️ المنطقة/المحافظة
+                city: detectedGovernorate,  // 🏙️ المحافظة فقط
                 stage: stage,
                 grade: grade,
                 subjects: subjects.join(' | '),
@@ -398,11 +423,10 @@
                     document.getElementById('greetingBox').classList.remove('show');
                     document.getElementById('cityDisplay').style.display = 'none';
                     document.getElementById('locationLoading').style.display = 'block';
-                    document.getElementById('locationLoading').textContent = '📍 جاري تحديد موقعك تلقائياً...';
+                    document.getElementById('locationLoading').textContent = '📍 جاري تحديد محافظتك تلقائياً...';
                     document.getElementById('locationLoading').style.color = '#667eea';
                     currentOrderCode = '';
-                    detectedCity = '';
-                    detectedRegion = '';
+                    detectedGovernorate = '';
                 }, 3000);
             })
             .catch(err => {
