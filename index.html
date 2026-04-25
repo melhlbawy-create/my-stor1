@@ -2,256 +2,267 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>كبسولة تعليمية</title>
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #0f172a; color: #fff; padding: 15px; margin: 0; }
-        .container { max-width: 400px; margin: auto; background: #1e293b; padding: 20px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
-        h1 { text-align: center; color: #38bdf8; margin-bottom: 15px; }
-        .info-box { background: #334155; padding: 12px; border-radius: 10px; margin-bottom: 15px; font-size: 14px; line-height: 1.6; }
-        label { display: block; margin: 10px 0 5px; color: #94a3b8; font-size: 14px; }
-        select, input[type="text"] { width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #475569; background: #0f172a; color: #fff; font-size: 15px; box-sizing: border-box; }
-        .subjects-wrap { max-height: 180px; overflow-y: auto; background: #0f172a; padding: 8px; border-radius: 8px; border: 1px solid #334155; margin-bottom: 10px; }
-        .subject-item { display: flex; align-items: center; padding: 6px 0; border-bottom: 1px solid #1e293b; }
-        .subject-item:last-child { border-bottom: none; }
-        .subject-item input { margin-left: 10px; width: auto; }
-        .total-box { text-align: center; font-size: 18px; font-weight: bold; background: #0f172a; padding: 10px; border-radius: 8px; margin: 10px 0; }
-        .btn { width: 100%; padding: 12px; background: #2563eb; color: #fff; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 10px; }
-        .btn:disabled { background: #475569; cursor: not-allowed; }
-        .status { text-align: center; font-size: 13px; margin-top: 8px; min-height: 18px; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; padding: 20px; }
+        .container { max-width: 600px; margin: 0 auto; background: white; border-radius: 20px; padding: 30px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); }
+        .header { text-align: center; margin-bottom: 30px; padding-bottom: 20px; border-bottom: 3px solid #667eea; }
+        .header h1 { color: #667eea; font-size: 2em; margin-bottom: 10px; }
+        .student-info { background: #f8f9fa; padding: 15px; border-radius: 10px; margin-bottom: 20px; text-align: center; }
+        .student-info p { margin: 5px 0; font-weight: bold; }
+        .form-group { margin-bottom: 20px; }
+        label { display: block; margin-bottom: 8px; color: #333; font-weight: bold; }
+        select { width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 8px; font-size: 16px; transition: border-color 0.3s; }
+        select:focus { outline: none; border-color: #667eea; }
+        .subjects-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin-top: 10px; }
+        .subject-checkbox { display: flex; align-items: center; padding: 10px; background: #f8f9fa; border-radius: 8px; cursor: pointer; transition: background 0.3s; }
+        .subject-checkbox:hover { background: #e9ecef; }
+        .subject-checkbox input[type="checkbox"] { margin-left: 8px; width: 18px; height: 18px; cursor: pointer; }
+        .subject-checkbox label { margin: 0; cursor: pointer; font-weight: normal; }
+        .total { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 10px; text-align: center; margin: 20px 0; font-size: 1.5em; font-weight: bold; }
+        .submit-btn { width: 100%; padding: 15px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 10px; font-size: 1.2em; font-weight: bold; cursor: pointer; transition: transform 0.2s; }
+        .submit-btn:hover { transform: translateY(-2px); }
+        .submit-btn:active { transform: translateY(0); }
+        .success-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000; justify-content: center; align-items: center; }
+        .success-content { background: white; padding: 40px; border-radius: 20px; text-align: center; max-width: 400px; }
+        .success-content h2 { color: #28a745; margin-bottom: 15px; }
+        .success-content p { margin: 10px 0; color: #666; }
+        .loading { display: inline-block; width: 20px; height: 20px; border: 3px solid rgba(255,255,255,.3); border-radius: 50%; border-top-color: white; animation: spin 1s ease-in-out infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>📚 كبسولة تعليمية</h1>
-        <div class="info-box">
-            👤 الطالب: <span id="student-name">جاري التحميل...</span><br>
-            🆔 معرف تليجرام: <span id="tg-id">...</span><br>
-            📍 المحافظة: <span id="city-display">جاري التحديد...</span>
+        <div class="header">
+            <h1>كبسولة تعليمية</h1>
         </div>
-
-        <label>المرحلة الدراسية:</label>
-        <select id="stage" onchange="updateGrades()">
-            <option value="">اختر المرحلة</option>
-            <option value="المرحلة الابتدائية">المرحلة الابتدائية</option>
-            <option value="المرحلة الإعدادية">المرحلة الإعدادية</option>
-            <option value="المرحلة الثانوية">المرحلة الثانوية</option>
-        </select>
-
-        <label>الصف الدراسي:</label>
-        <select id="grade" onchange="updateSubjects()">
-            <option value="">اختر الصف أولاً</option>
-        </select>
-
-        <label>اختر المواد المطلوبة:</label>
-        <div id="subjects-container" class="subjects-wrap">
-            <p style="text-align:center; color:#64748b; padding:10px;">اختر المرحلة والصف لعرض المواد</p>
+        
+        <div class="student-info">
+            <p id="studentName">الطالب: جاري التحميل..</p>
+            <p id="orderCodeDisplay">الكود: ...</p>
         </div>
-
-        <div class="total-box"> الإجمالي: <span id="total-amount">0</span> ج.م</div>
-        <button class="btn" id="submit-btn" onclick="submitOrder()" disabled>🚀 تأكيد وإرسال الطلب</button>
-        <div class="status" id="status-msg"></div>
+        
+        <form id="orderForm">
+            <div class="form-group">
+                <label>المرحلة الدراسية:</label>
+                <select id="stage" required>
+                    <option value="">اختر المرحلة</option>
+                    <option value="المرحلة الابتدائية">المرحلة الابتدائية</option>
+                    <option value="المرحلة الإعدادية">المرحلة الإعدادية</option>
+                    <option value="المرحلة الثانوية">المرحلة الثانوية</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label>الصف الدراسي:</label>
+                <select id="grade" required>
+                    <option value="">اختر الصف أولاً</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label>اختر المواد المطلوبة:</label>
+                <div id="subjectsContainer" class="subjects-grid">
+                    <!-- سيتم توليد المواد تلقائياً هنا -->
+                </div>
+            </div>
+            
+            <div class="total">
+                الإجمالي: <span id="totalAmount">0</span> ج.م
+            </div>
+            
+            <button type="submit" class="submit-btn">🚀 تأكيد وإرسال الطلب</button>
+        </form>
+    </div>
+    
+    <div class="success-modal" id="successModal">
+        <div class="success-content">
+            <h2>شكراً لثقتك بنا</h2>
+            <p>تم إرسال طلبك بنجاح لـ "كبسولة تعليمية"</p>
+            <p>جاري توجيهك الآن..</p>
+            <button onclick="closeModal()" style="margin-top: 20px; padding: 10px 30px; background: #667eea; color: white; border: none; border-radius: 8px; cursor: pointer;">موافق</button>
+        </div>
     </div>
 
     <script>
-        // ================= تهيئة تليجرام ويب أب =================
-        const tg = window.Telegram.WebApp;
-        tg.ready();
-        tg.expand();
+        // ==================== 🔧 إعدادات قابلة للتعديل بسهولة ====================
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyxYbsNX-m8j9o0iVcF4p02cmv6d6ElnP8Tk-YXq-qDEHfChFwqUxD-SHSGHBRc808J/exec';
+        
+        // 💰 سعر المادة الواحدة (غيّر الرقم هنا فقط لو تغير السعر مستقبلاً)
+        const PRICE_PER_SUBJECT = 20; 
 
-        let userData = { name: 'ضيف الكبسولة', id: 'unknown' };
-        let userCity = 'غير معروف';
-        let browserFingerprint = '';
-        const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyhwc-Erqqo4Wtl2smxSn0KRb1ijYYJVmRSpS9niipMCZwRdvRXAgN4ijSfyVp-kGkX/exec'; //https://script.google.com/macros/s/AKfycbwz3V-yVqhOZNHwUrgM0t0DJBAgkObJZVZun7ddRkmpcSxg9dnihriE6QPZnDSwNR8q/exec
-
-        // ================= 1. جلب بيانات تليجرام =================
-        function initTelegramUser() {
-            const user = tg.initDataUnsafe?.user;
-            if (user) {
-                userData.name = user.first_name + (user.last_name ? ' ' + user.last_name : '');
-                userData.id = user.id.toString();
-            }
-            document.getElementById('student-name').textContent = userData.name;
-            document.getElementById('tg-id').textContent = userData.id;
-        }
-
-        // ================= 2. كود جلب الموقع (محفوظ تماماً كما طلبت) =================
-        function initLocation() {
-            return new Promise((resolve) => {
-                if (!navigator.geolocation) return resolve(userCity);
-                navigator.geolocation.getCurrentPosition(async (position) => {
-                    try {
-                        const { latitude, longitude } = position.coords;
-                        const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&accept-language=ar`);
-                        const data = await res.json();
-                        userCity = data.address.city || data.address.town || data.address.village || data.address.state || 'غير معروف';
-                        document.getElementById('city-display').textContent = userCity;
-                        resolve(userCity);
-                    } catch (e) {
-                        document.getElementById('city-display').textContent = userCity;
-                        resolve(userCity);
-                    }
-                }, () => {
-                    document.getElementById('city-display').textContent = userCity;
-                    resolve(userCity);
-                }, { timeout: 6000, enableHighAccuracy: false });
-            });
-        }
-
-        // ================= 3. كود جلب بصمة المتصفح (معزول ومستقل) =================
-        function generateFingerprint() {
-            return new Promise((resolve) => {
-                try {
-                    const props = [
-                        navigator.userAgent,
-                        navigator.language || navigator.userLanguage,
-                        screen.colorDepth,
-                        new Date().getTimezoneOffset(),
-                        navigator.hardwareConcurrency || 0,
-                        screen.width + 'x' + screen.height,
-                        navigator.platform,
-                        Intl.DateTimeFormat().resolvedOptions().timeZone,
-                        navigator.maxTouchPoints || 0
-                    ];
-                    const str = props.join('||');
-                    let h = 0;
-                    for (let i = 0; i < str.length; i++) {
-                        h = ((h << 5) - h) + str.charCodeAt(i);
-                        h |= 0;
-                    }
-                    browserFingerprint = 'FP_' + Math.abs(h).toString(36).toUpperCase() + '_' + Date.now().toString(36);
-                    resolve(browserFingerprint);
-                } catch (err) {
-                    browserFingerprint = 'FP_ERR_' + Date.now();
-                    resolve(browserFingerprint);
-                }
-            });
-        }
-
-        // ================= 4. التهيئة المتوازية عند التحميل =================
-        document.addEventListener('DOMContentLoaded', async () => {
-            initTelegramUser();
-            document.getElementById('status-msg').textContent = '⏳ جاري تجهيز النظام...';
-            
-            await Promise.all([
-                initLocation(),
-                generateFingerprint()
-            ]);
-
-            document.getElementById('status-msg').textContent = '✅ النظام جاهز. اختر المواد وأرسل الطلب.';
-            checkFormValidity();
-        });
-
-        // ================= 5. منطق المواد والأسعار =================
-        const subjectsDB = {
-            'المرحلة الابتدائية': {
-                'الصف الأول': [{name: 'لغة عربية', price: 20}, {name: 'رياضيات', price: 25}],
-                'الصف السادس': [{name: 'لغة عربية', price: 30}, {name: 'علوم', price: 25}, {name: 'رياضيات', price: 30}]
-            },
-            'المرحلة الإعدادية': {
-                'الصف الأول': [{name: 'رياضيات', price: 35}, {name: 'علوم', price: 30}],
-                'الصف الثالث': [{name: 'رياضيات', price: 40}, {name: 'فيزياء', price: 35}, {name: 'كيمياء', price: 35}]
-            },
-            'المرحلة الثانوية': {
-                'الصف الأول': [{name: 'رياضيات', price: 50}, {name: 'فيزياء', price: 45}],
-                'الصف الثالث': [{name: 'رياضيات', price: 60}, {name: 'فيزياء', price: 55}, {name: 'كيمياء', price: 55}]
-            }
+        // 🔤 حرف المرحلة للكود
+        const STAGE_PREFIX = {
+            'المرحلة الابتدائية': 'a',
+            'المرحلة الإعدادية': 'b',
+            'المرحلة الثانوية': 'c'
         };
 
-        function updateGrades() {
-            const stage = document.getElementById('stage').value;
-            const gradeSelect = document.getElementById('grade');
-            gradeSelect.innerHTML = '<option value="">اختر الصف</option>';
-            if (subjectsDB[stage]) {
-                Object.keys(subjectsDB[stage]).forEach(g => {
-                    gradeSelect.innerHTML += `<option value="${g}">${g}</option>`;
-                });
-            }
-            updateSubjects();
-        }
+        // 📚 الصفوف المتاحة لكل مرحلة
+        const GRADES_BY_STAGE = {
+            'المرحلة الابتدائية': ['الثالث الابتدائي', 'الرابع الابتدائي', 'الخامس الابتدائي', 'السادس الابتدائي'],
+            'المرحلة الإعدادية': ['الأول الإعدادي', 'الثاني الإعدادي', 'الثالث الإعدادي'],
+            'المرحلة الثانوية': ['الأول الثانوي', 'الثاني الثانوي', 'الثالث الثانوي']
+        };
 
-        function updateSubjects() {
-            const stage = document.getElementById('stage').value;
-            const grade = document.getElementById('grade').value;
-            const container = document.getElementById('subjects-container');
-            container.innerHTML = '';
-            if (subjectsDB[stage] && subjectsDB[stage][grade]) {
-                subjectsDB[stage][grade].forEach((sub, idx) => {
-                    container.innerHTML += `
-                        <div class="subject-item">
-                            <input type="checkbox" id="sub_${idx}" value="${sub.name}" data-price="${sub.price}" onchange="calcTotal()">
-                            <label for="sub_${idx}" style="margin:0; flex:1; cursor:pointer;">${sub.name} (${sub.price} ج.م)</label>
-                        </div>`;
-                });
-            } else {
-                container.innerHTML = '<p style="text-align:center; color:#64748b; padding:10px;">اختر المرحلة والصف أولاً</p>';
-            }
-            calcTotal();
-        }
+        // 📖 المواد المتاحة لكل صف (لتعديل المواد مستقبلاً: عدّل هذا الكائن فقط)
+        const SUBJECTS_BY_GRADE = {
+            'الثالث الابتدائي': ['اللغة الإنجليزية', 'التربية الدينية', 'اللغة العربية', 'الرياضيات'],
+            'الرابع الابتدائي': ['اللغة الإنجليزية', 'التربية الدينية', 'اللغة العربية', 'الدراسات', 'العلوم', 'الحاسب الآلي'],
+            'الخامس الابتدائي': ['اللغة الإنجليزية', 'التربية الدينية', 'اللغة العربية', 'الدراسات', 'العلوم', 'الحاسب الآلي'],
+            'السادس الابتدائي': ['اللغة الإنجليزية', 'التربية الدينية', 'اللغة العربية', 'الدراسات', 'العلوم', 'الحاسب الآلي'],
+            'الأول الإعدادي': ['اللغة الإنجليزية', 'التربية الدينية', 'اللغة العربية', 'الدراسات', 'العلوم', 'الحاسب الآلي', 'مهارات الصناعة'],
+            'الثاني الإعدادي': ['اللغة الإنجليزية', 'التربية الدينية', 'اللغة العربية', 'الدراسات', 'العلوم', 'الحاسب الآلي', 'مهارات الصناعة'],
+            'الثالث الإعدادي': ['اللغة الإنجليزية', 'التربية الدينية', 'اللغة العربية', 'الدراسات', 'العلوم', 'الحاسب الآلي', 'مهارات الصناعة'],
+            'الأول الثانوي': ['اللغة الإنجليزية', 'اللغة العربية', 'التربية الدينية', 'العلوم المتكاملة', 'الحاسب الآلي'],
+            'الثاني الثانوي': ['اللغة الإنجليزية', 'اللغة العربية', 'التربية الدينية', 'العلوم المتكاملة', 'الحاسب الآلي'],
+            'الثالث الثانوي': ['اللغة الإنجليزية', 'اللغة العربية', 'الفلسفة', 'الفيزياء', 'التربية الدينية', 'الحاسب الآلي', 'التاريخ']
+        };
 
-        function calcTotal() {
-            let total = 0;
-            document.querySelectorAll('.subject-item input:checked').forEach(cb => {
-                total += parseInt(cb.dataset.price);
-            });
-            document.getElementById('total-amount').textContent = total;
-            checkFormValidity();
-        }
+        // ==================== المتغيرات العامة ====================
+        let studentData = { name: '', telegramId: '' };
+        let currentOrderCode = '';
 
-        function checkFormValidity() {
-            const stage = document.getElementById('stage').value;
-            const grade = document.getElementById('grade').value;
-            const checked = document.querySelectorAll('.subject-item input:checked').length;
-            document.getElementById('submit-btn').disabled = !(stage && grade && checked > 0 && browserFingerprint && userCity !== 'جاري التحديد...');
-        }
-
-        // ================= 6. إرسال الطلب للخادم =================
-        async function submitOrder() {
-            if (!browserFingerprint) { alert('⏳ جاري تجهيز البصمة، انتظر لحظة...'); return; }
+        // ==================== عند تحميل الصفحة ====================
+        window.addEventListener('DOMContentLoaded', function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            studentData.name = urlParams.get('name') || 'ضيف الكبسولة';
+            studentData.telegramId = urlParams.get('telegram') || '';
             
-            const btn = document.getElementById('submit-btn');
-            btn.disabled = true;
-            btn.textContent = '⏳ جاري الإرسال...';
-            document.getElementById('status-msg').textContent = '📡 يتم الاتصال بالخادم...';
+            document.getElementById('studentName').textContent = 'الطالب: ' + studentData.name;
+            
+            // ربط الأحداث
+            document.getElementById('stage').addEventListener('change', handleStageChange);
+            document.getElementById('grade').addEventListener('change', handleGradeChange);
+            document.getElementById('orderForm').addEventListener('submit', submitForm);
+        });
 
-            const selectedSubjects = [];
-            document.querySelectorAll('.subject-item input:checked').forEach(cb => selectedSubjects.push(cb.value));
-            const total = document.getElementById('total-amount').textContent;
+        // ==================== عند تغيير المرحلة ====================
+        function handleStageChange(e) {
+            const stage = e.target.value;
+            const gradeSelect = document.getElementById('grade');
+            const subjectsContainer = document.getElementById('subjectsContainer');
+            
+            // تفريغ القوائم
+            gradeSelect.innerHTML = '<option value="">اختر الصف</option>';
+            subjectsContainer.innerHTML = '';
+            document.getElementById('totalAmount').textContent = '0';
+            
+            if (stage && GRADES_BY_STAGE[stage]) {
+                // ملء قائمة الصفوف
+                GRADES_BY_STAGE[stage].forEach(grade => {
+                    const opt = document.createElement('option');
+                    opt.value = grade;
+                    opt.textContent = grade;
+                    gradeSelect.appendChild(opt);
+                });
+                
+                // توليد كود جديد
+                generateOrderCode(stage);
+            } else {
+                document.getElementById('orderCodeDisplay').textContent = 'الكود: ...';
+                currentOrderCode = '';
+            }
+        }
 
-            const payload = {
-                order_id: 'CAP_' + Date.now().toString(36).toUpperCase(),
-                student_name: userData.name,
-                telegram_id: userData.id,
-                city: userCity,
-                stage: document.getElementById('stage').value,
-                grade: document.getElementById('grade').value,
-                subjects: selectedSubjects.join(' | '),
-                total_amount: total,
-                browser_fingerprint: browserFingerprint,
+        // ==================== عند تغيير الصف ====================
+        function handleGradeChange(e) {
+            const grade = e.target.value;
+            const container = document.getElementById('subjectsContainer');
+            container.innerHTML = '';
+            document.getElementById('totalAmount').textContent = '0';
+            
+            if (grade && SUBJECTS_BY_GRADE[grade]) {
+                SUBJECTS_BY_GRADE[grade].forEach((subj, index) => {
+                    const id = `subj_${index}`;
+                    const div = document.createElement('div');
+                    div.className = 'subject-checkbox';
+                    div.innerHTML = `
+                        <input type="checkbox" id="${id}" name="subject" value="${subj}" onchange="calculateTotal()">
+                        <label for="${id}">${subj}</label>
+                    `;
+                    container.appendChild(div);
+                });
+            }
+        }
+
+        // ==================== توليد كود الطلب ====================
+        function generateOrderCode(stage) {
+            const prefix = STAGE_PREFIX[stage] || 'x';
+            const randomNum = Math.floor(100000 + Math.random() * 900000);
+            currentOrderCode = `CAP_${prefix}${randomNum}`;
+            document.getElementById('orderCodeDisplay').textContent = 'الكود: ' + currentOrderCode;
+        }
+
+        // ==================== حساب الإجمالي ====================
+        function calculateTotal() {
+            const checked = document.querySelectorAll('input[name="subject"]:checked').length;
+            document.getElementById('totalAmount').textContent = checked * PRICE_PER_SUBJECT;
+        }
+
+        // ==================== إرسال النموذج ====================
+        function submitForm(e) {
+            e.preventDefault();
+            
+            const stage = document.getElementById('stage').value;
+            const grade = document.getElementById('grade').value;
+            const subjects = Array.from(document.querySelectorAll('input[name="subject"]:checked')).map(cb => cb.value);
+            
+            if (!stage || !grade || subjects.length === 0) {
+                alert('الرجاء استكمال اختيار المرحلة والصف ومادة واحدة على الأقل');
+                return;
+            }
+            
+            const formData = {
+                order_id: currentOrderCode,
+                student_name: studentData.name,
+                telegram_id: studentData.telegramId,
+                stage: stage,
+                grade: grade,
+                subjects: subjects.join(' | '),
+                count: subjects.length,
+                total_amount: document.getElementById('totalAmount').textContent,
+                browser_fingerprint: btoa(navigator.userAgent + '|' + new Date().getTime()),
                 timestamp: new Date().toISOString()
             };
-
-            try {
-                const response = await fetch(APPS_SCRIPT_URL, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
-
-                if (response.ok) {
-                    const resData = await response.json();
-                    tg.showAlert('✅ تم استلام طلبك بنجاح!\nسيتم توجيهك لبوابة الدفع.');
-                    setTimeout(() => tg.close(), 2000);
-                } else {
-                    throw new Error('فشل الاتصال بالخادم');
-                }
-            } catch (err) {
-                alert('❌ حدث خطأ أثناء الإرسال. تأكد من الإنترنت وحاول مرة أخرى.');
+            
+            console.log('البيانات المرسلة:', formData);
+            
+            const btn = document.querySelector('.submit-btn');
+            btn.innerHTML = '<span class="loading"></span> جاري الإرسال...';
+            btn.disabled = true;
+            
+            fetch(SCRIPT_URL, {
+                method: 'POST',
+                mode: 'no-cors',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(formData)
+            })
+            .then(() => {
+                btn.innerHTML = '✓ تم الإرسال بنجاح';
+                document.getElementById('successModal').style.display = 'flex';
+                setTimeout(() => {
+                    btn.innerHTML = '🚀 تأكيد وإرسال الطلب';
+                    btn.disabled = false;
+                    document.getElementById('orderForm').reset();
+                    document.getElementById('subjectsContainer').innerHTML = '';
+                    document.getElementById('grade').innerHTML = '<option value="">اختر الصف أولاً</option>';
+                    document.getElementById('orderCodeDisplay').textContent = 'الكود: ...';
+                    document.getElementById('totalAmount').textContent = '0';
+                    currentOrderCode = '';
+                }, 3000);
+            })
+            .catch(err => {
+                alert('حدث خطأ. حاول مرة أخرى.');
+                btn.innerHTML = ' تأكيد وإرسال الطلب';
                 btn.disabled = false;
-                btn.textContent = '🚀 تأكيد وإرسال الطلب';
-            }
+            });
+        }
+
+        function closeModal() {
+            document.getElementById('successModal').style.display = 'none';
         }
     </script>
 </body>
-</html>
