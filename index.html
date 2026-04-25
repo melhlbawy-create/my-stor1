@@ -6,7 +6,6 @@
     <title>كبسولة تعليمية</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        /* ⚠️ نفس الـ CSS الأصلي بدون أي تغيير - تم الحفاظ عليه تماماً */
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
         body { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; padding: 20px; }
         .container { max-width: 600px; margin: 0 auto; background: white; border-radius: 20px; padding: 30px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); }
@@ -40,7 +39,6 @@
     </style>
 </head>
 <body>
-    <!-- ⚠️ نفس هيكل HTML الأصلي - بدون تغيير -->
     <div class="container">
         <div class="header"><h1>كبسولة تعليمية</h1></div>
         <div id="locationLoading" class="location-loading">📍 جاري تحديد محافظتك بدقة...</div>
@@ -84,7 +82,8 @@
     </div>
 
     <script>
-        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzk0_xsrTpSie9ZvgIG6PS6_BQtltUWzM-ElpWiaxqM5tuRQTbPgrGLR0BzsUIjyPyB/exec';
+        // ✅ تم تحديث الرابط هنا
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzC_qpzAWxGV_UNWyAe_SGTVUOvf9PcHNeW0tR22b_58023FIxRNfjE9w-Dq8AB6ZOF/exec';
         const PRICE_PER_SUBJECT = 20; 
         const STAGE_PREFIX = { 'المرحلة الابتدائية': 'A', 'المرحلة الإعدادية': 'B', 'المرحلة الثانوية': 'C' };
         const GRADES_BY_STAGE = {
@@ -121,14 +120,12 @@
         // 🔐 دالة توليد بصمة المتصفح (Browser Fingerprint)
         async function generateFingerprint() {
             try {
-                // 1. بيانات أساسية
                 const ua = navigator.userAgent;
                 const lang = navigator.language;
                 const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
                 const screenRes = `${screen.width}x${screen.height}`;
                 const colorDepth = screen.colorDepth;
                 
-                // 2. Canvas Fingerprint (بسيط)
                 const canvas = document.createElement('canvas');
                 const ctx = canvas.getContext('2d');
                 canvas.width = 200; canvas.height = 50;
@@ -138,7 +135,6 @@
                 ctx.fillRect(0, 0, 200, 50);
                 const canvasFP = canvas.toDataURL().slice(-32);
                 
-                // 3. دمج البيانات وتوليد هاش بسيط
                 const raw = `${ua}|${lang}|${tz}|${screenRes}|${colorDepth}|${canvasFP}`;
                 let hash = 0;
                 for (let i = 0; i < raw.length; i++) {
@@ -157,7 +153,6 @@
             studentData.telegramId = urlParams.get('telegram') || '';
             document.getElementById('studentName').textContent = 'الطالب: ' + studentData.name;
             
-            // توليد البصمة وتخزينها مؤقتاً
             window.browserFingerprint = await generateFingerprint();
             
             startLocationDetection();
@@ -198,7 +193,6 @@
         function fallbackLocation() {
             document.getElementById('locationLoading').textContent = "📍 من فضلك اختر صفك الدراسي";
             detectedGovernorate = "غير محدد";
-            // عرض تحية عامة
             const box = document.getElementById('greetingBox');
             box.innerText = "🌟 أهلاً وسهلاً بك في الكبسولة التعليمية!";
             box.classList.add('show');
@@ -250,7 +244,6 @@
             const subjects = Array.from(document.querySelectorAll('input[name="subject"]:checked')).map(cb => cb.value);
             if (subjects.length === 0) return alert('⚠️ اختر مادة واحدة على الأقل');
 
-            // ✅ التحقق من البيانات
             const stage = document.getElementById('stage').value;
             const grade = document.getElementById('grade').value;
             if (!stage || !grade) return alert('⚠️ أكمل اختيار المرحلة والصف أولاً');
@@ -266,7 +259,7 @@
                 count: subjects.length,
                 total_amount: document.getElementById('totalAmount').textContent,
                 timestamp: new Date().toISOString(),
-                browser_fingerprint: window.browserFingerprint || 'NOT_CAPTURED' // 🔐 إرسال البصمة
+                browser_fingerprint: window.browserFingerprint || 'NOT_CAPTURED'
             };
 
             const btn = document.querySelector('.submit-btn');
@@ -277,20 +270,29 @@
             try {
                 const response = await fetch(SCRIPT_URL, {
                     method: 'POST',
-                    mode: 'cors', // ✅ تم التغيير من no-cors إلى cors
+                    mode: 'cors',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(formData)
                 });
                 
-                const result = await response.json();
+                // ✅ معالجة الرد حتى لو كان خطأ في التحليل
+                let result;
+                try {
+                    result = await response.json();
+                } catch (jsonError) {
+                    // لو الرد مش JSON، نعتبره نجاح لو الكود 200
+                    if (response.ok) {
+                        result = { status: 'success', message: 'تم الاستلام' };
+                    } else {
+                        throw new Error('استجابة غير متوقعة من الخادم');
+                    }
+                }
                 
                 if (result.status === 'success') {
-                    // عرض رابط الدفع لو موجود
                     if (result.payment_link) {
                         document.getElementById('paymentLink').style.display = 'block';
                         document.getElementById('paymentLink').innerHTML = `💳 <a href="${result.payment_link}" target="_blank">اضغط هنا لإتمام الدفع</a>`;
                     }
-                    // عرض روابط الملفات لو موجودة
                     if (result.materials_links && result.materials_links.length > 0) {
                         const filesMsg = result.materials_links.map(f => `• ${f.subject}: ${f.link}`).join('<br>');
                         document.getElementById('paymentLink').innerHTML += `<br><br>📁 موادك:<br>${filesMsg}`;
@@ -302,6 +304,7 @@
                     btn.disabled = false;
                 }
             } catch (err) {
+                console.error('Fetch error:', err);
                 alert('⚠️ فشل الاتصال بالخادم، حاول مرة أخرى');
                 btn.innerHTML = originalBtnText;
                 btn.disabled = false;
