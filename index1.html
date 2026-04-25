@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>كبسولة تعليمية</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; padding: 20px; }
+        .container { max-width: 600px; margin: 0 auto; background: white; border-radius: 20px; padding: 30px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); }
+        .header { text-align: center; margin-bottom: 30px; padding-bottom: 20px; border-bottom: 3px solid #667eea; }
+        .header h1 { color: #667eea; font-size: 2em; margin-bottom: 10px; }
+        .student-info { background: #f8f9fa; padding: 15px; border-radius: 10px; margin-bottom: 20px; text-align: center; }
+        .student-info p { margin: 5px 0; font-weight: bold; }
+        .form-group { margin-bottom: 20px; }
+        label { display: block; margin-bottom: 8px; color: #333; font-weight: bold; }
+        select { width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 8px; font-size: 16px; transition: border-color 0.3s; }
+        select:focus { outline: none; border-color: #667eea; }
+        .subjects-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin-top: 10px; }
+        .subject-checkbox { display: flex; align-items: center; padding: 10px; background: #f8f9fa; border-radius: 8px; cursor: pointer; transition: background 0.3s; }
+        .subject-checkbox:hover { background: #e9ecef; }
+        .subject-checkbox input[type="checkbox"] { margin-left: 8px; width: 18px; height: 18px; cursor: pointer; }
+        .subject-checkbox label { margin: 0; cursor: pointer; font-weight: normal; }
+        .total { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 10px; text-align: center; margin: 20px 0; font-size: 1.5em; font-weight: bold; }
+        .submit-btn { width: 100%; padding: 15px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 10px; font-size: 1.2em; font-weight: bold; cursor: pointer; transition: transform 0.2s; }
+        .submit-btn:hover { transform: translateY(-2px); }
+        .submit-btn:active { transform: translateY(0); }
+        .success-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000; justify-content: center; align-items: center; }
+        .success-content { background: white; padding: 40px; border-radius: 20px; text-align: center; max-width: 400px; }
+        .success-content h2 { color: #28a745; margin-bottom: 15px; }
+        .success-content p { margin: 10px 0; color: #666; }
+        .loading { display: inline-block; width: 20px; height: 20px; border: 3px solid rgba(255,255,255,.3); border-radius: 50%; border-top-color: white; animation: spin 1s ease-in-out infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>كبسولة تعليمية</h1>
+        </div>
+        
+        <div class="student-info">
+            <p id="studentName">الطالب: جاري التحميل..</p>
+            <p id="orderCodeDisplay">الكود: ...</p>
+        </div>
+        
+        <form id="orderForm">
+            <div class="form-group">
+                <label>المرحلة الدراسية:</label>
+                <select id="stage" required>
+                    <option value="">اختر المرحلة</option>
+                    <option value="المرحلة الابتدائية">المرحلة الابتدائية</option>
+                    <option value="المرحلة الإعدادية">المرحلة الإعدادية</option>
+                    <option value="المرحلة الثانوية">المرحلة الثانوية</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label>الصف الدراسي:</label>
+                <select id="grade" required>
+                    <option value="">اختر الصف أولاً</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label>اختر المواد المطلوبة:</label>
+                <div id="subjectsContainer" class="subjects-grid">
+                    <!-- سيتم توليد المواد تلقائياً هنا -->
+                </div>
+            </div>
+            
+            <div class="total">
+                الإجمالي: <span id="totalAmount">0</span> ج.م
+            </div>
+            
+            <button type="submit" class="submit-btn">🚀 تأكيد وإرسال الطلب</button>
+        </form>
+    </div>
+    
+    <div class="success-modal" id="successModal">
+        <div class="success-content">
+            <h2>شكراً لثقتك بنا</h2>
+            <p>تم إرسال طلبك بنجاح لـ "كبسولة تعليمية"</p>
+            <p>جاري توجيهك الآن..</p>
+            <button onclick="closeModal()" style="margin-top: 20px; padding: 10px 30px; background: #667eea; color: white; border: none; border-radius: 8px; cursor: pointer;">موافق</button>
+        </div>
+    </div>
+
+    <script>
+        // ==================== 🔧 إعدادات قابلة للتعديل بسهولة ====================
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxvtlgXlOc17naG7bj5HzbK__3awukNvrY2Yb4FC4p_I1IK_0_zLGFp5oh1XIxbaOJn/exec';
+        
+        // 💰 سعر المادة الواحدة (غيّر الرقم هنا فقط لو تغير السعر مستقبلاً)
+        const PRICE_PER_SUBJECT = 20; 
+
+        // 🔤 حرف المرحلة للكود
+        const STAGE_PREFIX = {
+            'المرحلة الابتدائية': 'a',
+            'المرحلة الإعدادية': 'b',
+            'المرحلة الثانوية': 'c'
+        };
+
+        // 📚 الصفوف المتاحة لكل مرحلة
+        const GRADES_BY_STAGE = {
+            'المرحلة الابتدائية': ['الثالث الابتدائي', 'الرابع الابتدائي', 'الخامس الابتدائي', 'السادس الابتدائي'],
+            'المرحلة الإعدادية': ['الأول الإعدادي', 'الثاني الإعدادي', 'الثالث الإعدادي'],
+            'المرحلة الثانوية': ['الأول الثانوي', 'الثاني الثانوي', 'الثالث الثانوي']
+        };
+
+        // 📖 المواد المتاحة لكل صف (لتعديل المواد مستقبلاً: عدّل هذا الكائن فقط)
+        const SUBJECTS_BY_GRADE = {
+            'الثالث الابتدائي': ['اللغة الإنجليزية', 'التربية الدينية', 'اللغة العربية', 'الرياضيات'],
+            'الرابع الابتدائي': ['اللغة الإنجليزية', 'التربية الدينية', 'اللغة العربية', 'الدراسات', 'العلوم', 'الحاسب الآلي'],
+            'الخامس الابتدائي': ['اللغة الإنجليزية', 'التربية الدينية', 'اللغة العربية', 'الدراسات', 'العلوم', 'الحاسب الآلي'],
+            'السادس الابتدائي': ['اللغة الإنجليزية', 'التربية الدينية', 'اللغة العربية', 'الدراسات', 'العلوم', 'الحاسب الآلي'],
+            'الأول الإعدادي': ['اللغة الإنجليزية', 'التربية الدينية', 'اللغة العربية', 'الدراسات', 'العلوم', 'الحاسب الآلي', 'مهارات الصناعة'],
+            'الثاني الإعدادي': ['اللغة الإنجليزية', 'التربية الدينية', 'اللغة العربية', 'الدراسات', 'العلوم', 'الحاسب الآلي', 'مهارات الصناعة'],
+            'الثالث الإعدادي': ['اللغة الإنجليزية', 'التربية الدينية', 'اللغة العربية', 'الدراسات', 'العلوم', 'الحاسب الآلي', 'مهارات الصناعة'],
+            'الأول الثانوي': ['اللغة الإنجليزية', 'اللغة العربية', 'التربية الدينية', 'العلوم المتكاملة', 'الحاسب الآلي'],
+            'الثاني الثانوي': ['اللغة الإنجليزية', 'اللغة العربية', 'التربية الدينية', 'العلوم المتكاملة', 'الحاسب الآلي'],
+            'الثالث الثانوي': ['اللغة الإنجليزية', 'اللغة العربية', 'الفلسفة', 'الفيزياء', 'التربية الدينية', 'الحاسب الآلي', 'التاريخ']
+        };
+
+        // ==================== المتغيرات العامة ====================
+        let studentData = { name: '', telegramId: '' };
+        let currentOrderCode = '';
+
+        // ==================== عند تحميل الصفحة ====================
+        window.addEventListener('DOMContentLoaded', function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            studentData.name = urlParams.get('name') || 'ضيف الكبسولة';
+            studentData.telegramId = urlParams.get('telegram') || '';
+            
+            document.getElementById('studentName').textContent = 'الطالب: ' + studentData.name;
+            
+            // ربط الأحداث
+            document.getElementById('stage').addEventListener('change', handleStageChange);
+            document.getElementById('grade').addEventListener('change', handleGradeChange);
+            document.getElementById('orderForm').addEventListener('submit', submitForm);
+        });
+
+        // ==================== عند تغيير المرحلة ====================
+        function handleStageChange(e) {
+            const stage = e.target.value;
+            const gradeSelect = document.getElementById('grade');
+            const subjectsContainer = document.getElementById('subjectsContainer');
+            
+            // تفريغ القوائم
+            gradeSelect.innerHTML = '<option value="">اختر الصف</option>';
+            subjectsContainer.innerHTML = '';
+            document.getElementById('totalAmount').textContent = '0';
+            
+            if (stage && GRADES_BY_STAGE[stage]) {
+                // ملء قائمة الصفوف
+                GRADES_BY_STAGE[stage].forEach(grade => {
+                    const opt = document.createElement('option');
+                    opt.value = grade;
+                    opt.textContent = grade;
+                    gradeSelect.appendChild(opt);
+                });
+                
+                // توليد كود جديد
+                generateOrderCode(stage);
+            } else {
+                document.getElementById('orderCodeDisplay').textContent = 'الكود: ...';
+                currentOrderCode = '';
+            }
+        }
+
+        // ==================== عند تغيير الصف ====================
+        function handleGradeChange(e) {
+            const grade = e.target.value;
+            const container = document.getElementById('subjectsContainer');
+            container.innerHTML = '';
+            document.getElementById('totalAmount').textContent = '0';
+            
+            if (grade && SUBJECTS_BY_GRADE[grade]) {
+                SUBJECTS_BY_GRADE[grade].forEach((subj, index) => {
+                    const id = `subj_${index}`;
+                    const div = document.createElement('div');
+                    div.className = 'subject-checkbox';
+                    div.innerHTML = `
+                        <input type="checkbox" id="${id}" name="subject" value="${subj}" onchange="calculateTotal()">
+                        <label for="${id}">${subj}</label>
+                    `;
+                    container.appendChild(div);
+                });
+            }
+        }
+
+        // ==================== توليد كود الطلب ====================
+        function generateOrderCode(stage) {
+            const prefix = STAGE_PREFIX[stage] || 'x';
+            const randomNum = Math.floor(100000 + Math.random() * 900000);
+            currentOrderCode = `CAP_${prefix}${randomNum}`;
+            document.getElementById('orderCodeDisplay').textContent = 'الكود: ' + currentOrderCode;
+        }
+
+        // ==================== حساب الإجمالي ====================
+        function calculateTotal() {
+            const checked = document.querySelectorAll('input[name="subject"]:checked').length;
+            document.getElementById('totalAmount').textContent = checked * PRICE_PER_SUBJECT;
+        }
+
+        // ==================== إرسال النموذج ====================
+        function submitForm(e) {
+            e.preventDefault();
+            
+            const stage = document.getElementById('stage').value;
+            const grade = document.getElementById('grade').value;
+            const subjects = Array.from(document.querySelectorAll('input[name="subject"]:checked')).map(cb => cb.value);
+            
+            if (!stage || !grade || subjects.length === 0) {
+                alert('الرجاء استكمال اختيار المرحلة والصف ومادة واحدة على الأقل');
+                return;
+            }
+            
+            const formData = {
+                order_id: currentOrderCode,
+                student_name: studentData.name,
+                telegram_id: studentData.telegramId,
+                stage: stage,
+                grade: grade,
+                subjects: subjects.join(' | '),
+                count: subjects.length,
+                total_amount: document.getElementById('totalAmount').textContent,
+                browser_fingerprint: btoa(navigator.userAgent + '|' + new Date().getTime()),
+                timestamp: new Date().toISOString()
+            };
+            
+            console.log('البيانات المرسلة:', formData);
+            
+            const btn = document.querySelector('.submit-btn');
+            btn.innerHTML = '<span class="loading"></span> جاري الإرسال...';
+            btn.disabled = true;
+            
+            fetch(SCRIPT_URL, {
+                method: 'POST',
+                mode: 'no-cors',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(formData)
+            })
+            .then(() => {
+                btn.innerHTML = '✓ تم الإرسال بنجاح';
+                document.getElementById('successModal').style.display = 'flex';
+                setTimeout(() => {
+                    btn.innerHTML = '🚀 تأكيد وإرسال الطلب';
+                    btn.disabled = false;
+                    document.getElementById('orderForm').reset();
+                    document.getElementById('subjectsContainer').innerHTML = '';
+                    document.getElementById('grade').innerHTML = '<option value="">اختر الصف أولاً</option>';
+                    document.getElementById('orderCodeDisplay').textContent = 'الكود: ...';
+                    document.getElementById('totalAmount').textContent = '0';
+                    currentOrderCode = '';
+                }, 3000);
+            })
+            .catch(err => {
+                alert('حدث خطأ. حاول مرة أخرى.');
+                btn.innerHTML = ' تأكيد وإرسال الطلب';
+                btn.disabled = false;
+            });
+        }
+
+        function closeModal() {
+            document.getElementById('successModal').style.display = 'none';
+        }
+    </script><div id="location-container" style="text-align: center; margin: 20px;">
+    <button id="loc-btn" onclick="askTelegramLocation()" style="padding: 15px 25px; background: #248bcf; color: white; border: none; border-radius: 50px; font-weight: bold; cursor: pointer; box-shadow: 0 4px 15px rgba(36,139,207,0.4);">
+        📍 اضغط هنا يا بطل لتحديد محافظتك تلقائياً
+    </button>
+    <p id="status-msg" style="color: #666; font-size: 14px; margin-top: 10px;"></p>
+</div>
+
+<input type="hidden" id="governorate_field" name="governorate">
+
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<script>
+    const tg = window.Telegram.WebApp;
+    tg.ready();
+
+    async function askTelegramLocation() {
+        const btn = document.getElementById('loc-btn');
+        const status = document.getElementById('status-msg');
+        const govField = document.getElementById('governorate_field');
+
+        status.innerText = "جاري تحديد موقعك الجميل...";
+        
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(async (position) => {
+                const lat = position.coords.latitude;
+                const lon = position.coords.longitude;
+
+                try {
+                    // تحويل الإحداثيات لاسم محافظة عبر API مجاني
+                    const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lon}&accept-language=ar`);
+                    const data = await response.json();
+                    
+                    // استخراج المحافظة (State)
+                    const govName = data.address.state || data.address.city || "غير معروف";
+                    
+                    // تحديث الواجهة والحقل المخفي
+                    govField.value = govName;
+                    status.innerHTML = "✅ تم تحديد محافظتك: " + "<b>" + govName + "</b>";
+                    btn.style.display = "none"; // إخفاء الزر بعد النجاح
+                } catch (error) {
+                    status.innerText = "حدث خطأ بسيط، حاول مرة أخرى";
+                }
+            }, (error) => {
+                status.innerText = "من فضلك وافق على إذن الموقع لنعرف محافظتك";
+            });
+        } else {
+            status.innerText = "متصفحك لا يدعم تحديد الموقع";
+        }
+    }
+</script>
+</body>
