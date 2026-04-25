@@ -11,10 +11,37 @@
         .container { max-width: 600px; margin: 0 auto; background: white; border-radius: 20px; padding: 30px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); }
         .header { text-align: center; margin-bottom: 30px; padding-bottom: 20px; border-bottom: 3px solid #667eea; }
         .header h1 { color: #667eea; font-size: 2em; margin-bottom: 10px; }
-        .greeting-box { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; padding: 15px; border-radius: 15px; margin-bottom: 20px; text-align: center; font-size: 1.1em; font-weight: bold; display: none; animation: fadeIn 0.5s ease-in; }
+        
+        .greeting-box {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            padding: 15px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            text-align: center;
+            font-size: 1.1em;
+            font-weight: bold;
+            display: none;
+            animation: fadeIn 0.5s ease-in;
+        }
+        
         .greeting-box.show { display: block; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
-        .location-loading { background: #f8f9fa; padding: 10px; border-radius: 10px; text-align: center; margin-bottom: 20px; color: #667eea; font-weight: bold; }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .location-loading {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 10px;
+            text-align: center;
+            margin-bottom: 20px;
+            color: #667eea;
+            font-weight: bold;
+        }
+
         .student-info { background: #f8f9fa; padding: 15px; border-radius: 10px; margin-bottom: 20px; text-align: center; }
         .student-info p { margin: 5px 0; font-weight: bold; }
         .form-group { margin-bottom: 20px; }
@@ -40,14 +67,22 @@
 </head>
 <body>
     <div class="container">
-        <div class="header"><h1>كبسولة تعليمية</h1></div>
-        <div id="locationLoading" class="location-loading">📍 جاري تحديد محافظتك بدقة...</div>
+        <div class="header">
+            <h1>كبسولة تعليمية</h1>
+        </div>
+        
+        <div id="locationLoading" class="location-loading">
+            📍 جاري تحديد محافظتك بدقة...
+        </div>
+        
         <div id="greetingBox" class="greeting-box"></div>
+        
         <div class="student-info">
             <p id="studentName">الطالب: جاري التحميل..</p>
             <p id="orderCodeDisplay">الكود: ...</p>
             <p id="cityDisplay" style="color: #667eea; display: none;">📍 المحافظة: <span id="cityName"></span></p>
         </div>
+        
         <form id="orderForm">
             <div class="form-group">
                 <label>المرحلة الدراسية:</label>
@@ -58,39 +93,47 @@
                     <option value="المرحلة الثانوية">المرحلة الثانوية</option>
                 </select>
             </div>
+            
             <div class="form-group">
                 <label>الصف الدراسي:</label>
                 <select id="grade" required>
                     <option value="">اختر الصف أولاً</option>
                 </select>
             </div>
+            
             <div class="form-group">
                 <label>اختر المواد المطلوبة:</label>
                 <div id="subjectsContainer" class="subjects-grid"></div>
             </div>
-            <div class="total">الإجمالي: <span id="totalAmount">0</span> ج.م</div>
+            
+            <div class="total">
+                الإجمالي: <span id="totalAmount">0</span> ج.م
+            </div>
+            
             <button type="submit" class="submit-btn">🚀 تأكيد وإرسال الطلب</button>
         </form>
     </div>
+    
     <div class="success-modal" id="successModal">
         <div class="success-content">
             <h2>شكراً لثقتك بنا</h2>
             <p>تم إرسال طلبك بنجاح لـ "كبسولة تعليمية"</p>
-            <p id="paymentLink" style="margin: 10px 0; color: #667eea; font-weight: bold; display: none;"></p>
             <button onclick="closeModal()" style="margin-top: 20px; padding: 10px 30px; background: #667eea; color: white; border: none; border-radius: 8px; cursor: pointer;">موافق</button>
         </div>
     </div>
 
     <script>
-        // ✅ تم تحديث الرابط هنا
-        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzyoIjEdDa1XZNFalXs-xAUY5IXIBQQkgiVb4IydUe0jcgzdAg8Ajl280fzUJEGL_7X/exec';
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzPuIOCie2hwZSVSo-vnpyuPkvJXkh2S2KK6GcNhsVWHWPWN7PkkYhaHznXF8UUtqm6/exec';
         const PRICE_PER_SUBJECT = 20; 
+
         const STAGE_PREFIX = { 'المرحلة الابتدائية': 'A', 'المرحلة الإعدادية': 'B', 'المرحلة الثانوية': 'C' };
+
         const GRADES_BY_STAGE = {
             'المرحلة الابتدائية': ['الثالث الابتدائي', 'الرابع الابتدائي', 'الخامس الابتدائي', 'السادس الابتدائي'],
             'المرحلة الإعدادية': ['الأول الإعدادي', 'الثاني الإعدادي', 'الثالث الإعدادي'],
             'المرحلة الثانوية': ['الأول الثانوي', 'الثاني الثانوي', 'الثالث الثانوي']
         };
+
         const SUBJECTS_BY_GRADE = {
             'الثالث الابتدائي': ['اللغة الإنجليزية', 'التربية الدينية', 'اللغة العربية', 'الرياضيات'],
             'الرابع الابتدائي': ['اللغة الإنجليزية', 'التربية الدينية', 'اللغة العربية', 'الدراسات', 'العلوم', 'الحاسب الآلي'],
@@ -103,6 +146,7 @@
             'الثاني الثانوي': ['اللغة الإنجليزية', 'اللغة العربية', 'التربية الدينية', 'العلوم المتكاملة'],
             'الثالث الثانوي': ['اللغة الإنجليزية', 'اللغة العربية', 'الفلسفة', 'الفيزياء']
         };
+
         const GOVERNORATE_GREETINGS = {
             'Cairo': '🕌 القاهرة: منور يا بطل في العاصمة!',
             'Giza': '🔺 الجيزة: أهلاً بيك في أرض الأهرامات!',
@@ -117,60 +161,36 @@
         let currentOrderCode = '';
         let detectedGovernorate = 'غير معروف';
 
-        // 🔐 دالة توليد بصمة المتصفح (Browser Fingerprint)
-        async function generateFingerprint() {
-            try {
-                const ua = navigator.userAgent;
-                const lang = navigator.language;
-                const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
-                const screenRes = `${screen.width}x${screen.height}`;
-                const colorDepth = screen.colorDepth;
-                
-                const canvas = document.createElement('canvas');
-                const ctx = canvas.getContext('2d');
-                canvas.width = 200; canvas.height = 50;
-                ctx.font = '18pt Arial';
-                ctx.fillText('CapsuleEdu', 2, 15);
-                ctx.fillStyle = '#f60';
-                ctx.fillRect(0, 0, 200, 50);
-                const canvasFP = canvas.toDataURL().slice(-32);
-                
-                const raw = `${ua}|${lang}|${tz}|${screenRes}|${colorDepth}|${canvasFP}`;
-                let hash = 0;
-                for (let i = 0; i < raw.length; i++) {
-                    hash = ((hash << 5) - hash) + raw.charCodeAt(i);
-                    hash |= 0;
-                }
-                return 'FP_' + Math.abs(hash).toString(36).toUpperCase() + '_' + Date.now().toString(36).slice(-4);
-            } catch (e) {
-                return 'FP_UNKNOWN_' + Math.random().toString(36).slice(2, 10);
-            }
-        }
-
-        window.addEventListener('DOMContentLoaded', async function() {
+        window.addEventListener('DOMContentLoaded', function() {
             const urlParams = new URLSearchParams(window.location.search);
             studentData.name = urlParams.get('name') || 'ضيف الكبسولة';
             studentData.telegramId = urlParams.get('telegram') || '';
             document.getElementById('studentName').textContent = 'الطالب: ' + studentData.name;
             
-            window.browserFingerprint = await generateFingerprint();
-            
+            // حقن وظيفة تحديد الموقع الحقيقية
             startLocationDetection();
+
             document.getElementById('stage').addEventListener('change', handleStageChange);
             document.getElementById('grade').addEventListener('change', handleGradeChange);
             document.getElementById('orderForm').addEventListener('submit', submitForm);
         });
 
+        // دالة تحديد الموقع الذكية
         function startLocationDetection() {
             if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition(async (position) => {
                     const lat = position.coords.latitude;
                     const lon = position.coords.longitude;
+                    
                     try {
                         const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lon}&accept-language=ar`);
                         const data = await response.json();
                         const gov = data.address.state || data.address.city || "غير معروف";
+                        
+                        // تنظيف اسم المحافظة من الكلمات الزائدة
                         detectedGovernorate = gov.replace('محافظة ', '').trim();
+                        
+                        // عرض التحية بناءً على المحافظة
                         displayGreeting(detectedGovernorate);
                     } catch (e) {
                         fallbackLocation();
@@ -185,7 +205,9 @@
             document.getElementById('locationLoading').style.display = 'none';
             document.getElementById('cityDisplay').style.display = 'block';
             document.getElementById('cityName').textContent = gov;
+            
             const box = document.getElementById('greetingBox');
+            // البحث عن تحية مخصصة أو استخدام تحية عامة
             box.innerText = GOVERNORATE_GREETINGS[gov] || `✨ أهلاً بطل ${gov} في الكبسولة التعليمية!`;
             box.classList.add('show');
         }
@@ -193,10 +215,6 @@
         function fallbackLocation() {
             document.getElementById('locationLoading').textContent = "📍 من فضلك اختر صفك الدراسي";
             detectedGovernorate = "غير محدد";
-            const box = document.getElementById('greetingBox');
-            box.innerText = "🌟 أهلاً وسهلاً بك في الكبسولة التعليمية!";
-            box.classList.add('show');
-            document.getElementById('locationLoading').style.display = 'none';
         }
 
         function handleStageChange(e) {
@@ -239,76 +257,35 @@
             document.getElementById('totalAmount').textContent = checked * PRICE_PER_SUBJECT;
         }
 
-        async function submitForm(e) {
+        function submitForm(e) {
             e.preventDefault();
             const subjects = Array.from(document.querySelectorAll('input[name="subject"]:checked')).map(cb => cb.value);
-            if (subjects.length === 0) return alert('⚠️ اختر مادة واحدة على الأقل');
-
-            const stage = document.getElementById('stage').value;
-            const grade = document.getElementById('grade').value;
-            if (!stage || !grade) return alert('⚠️ أكمل اختيار المرحلة والصف أولاً');
+            if (subjects.length === 0) return alert('اختر مادة واحدة على الأقل');
 
             const formData = {
                 order_id: currentOrderCode,
                 student_name: studentData.name,
                 telegram_id: studentData.telegramId,
                 city: detectedGovernorate,
-                stage: stage,
-                grade: grade,
+                stage: document.getElementById('stage').value,
+                grade: document.getElementById('grade').value,
                 subjects: subjects.join(' | '),
                 count: subjects.length,
                 total_amount: document.getElementById('totalAmount').textContent,
-                timestamp: new Date().toISOString(),
-                browser_fingerprint: window.browserFingerprint || 'NOT_CAPTURED'
+                timestamp: new Date().toISOString()
             };
 
             const btn = document.querySelector('.submit-btn');
-            const originalBtnText = btn.innerHTML;
             btn.innerHTML = '<span class="loading"></span> جاري الإرسال...';
             btn.disabled = true;
 
-            try {
-                const response = await fetch(SCRIPT_URL, {
-                    method: 'POST',
-                    mode: 'cors',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(formData)
-                });
-                
-                // ✅ معالجة الرد حتى لو كان خطأ في التحليل
-                let result;
-                try {
-                    result = await response.json();
-                } catch (jsonError) {
-                    // لو الرد مش JSON، نعتبره نجاح لو الكود 200
-                    if (response.ok) {
-                        result = { status: 'success', message: 'تم الاستلام' };
-                    } else {
-                        throw new Error('استجابة غير متوقعة من الخادم');
-                    }
-                }
-                
-                if (result.status === 'success') {
-                    if (result.payment_link) {
-                        document.getElementById('paymentLink').style.display = 'block';
-                        document.getElementById('paymentLink').innerHTML = `💳 <a href="${result.payment_link}" target="_blank">اضغط هنا لإتمام الدفع</a>`;
-                    }
-                    if (result.materials_links && result.materials_links.length > 0) {
-                        const filesMsg = result.materials_links.map(f => `• ${f.subject}: ${f.link}`).join('<br>');
-                        document.getElementById('paymentLink').innerHTML += `<br><br>📁 موادك:<br>${filesMsg}`;
-                    }
-                    document.getElementById('successModal').style.display = 'flex';
-                } else {
-                    alert('⚠️ حدث خطأ: ' + (result.message || 'غير معروف'));
-                    btn.innerHTML = originalBtnText;
-                    btn.disabled = false;
-                }
-            } catch (err) {
-                console.error('Fetch error:', err);
-                alert('⚠️ فشل الاتصال بالخادم، حاول مرة أخرى');
-                btn.innerHTML = originalBtnText;
-                btn.disabled = false;
-            }
+            fetch(SCRIPT_URL, {
+                method: 'POST',
+                mode: 'no-cors',
+                body: JSON.stringify(formData)
+            }).then(() => {
+                document.getElementById('successModal').style.display = 'flex';
+            });
         }
 
         function closeModal() { location.reload(); }
