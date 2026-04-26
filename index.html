@@ -4,51 +4,74 @@
 <meta charset="UTF-8">
 <title>كبسولة تعليمية</title>
 
-<script src="https://telegram.org/js/telegram-web-app.js"></script>
-
 <style>
 body {
   font-family: Arial;
   direction: rtl;
-  padding: 15px;
-  background: #f5f5f5;
+  background: linear-gradient(135deg, #1e3c72, #2a5298);
+  color: #fff;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
 }
 
-.header {
+.container {
+  background: #ffffff10;
+  backdrop-filter: blur(10px);
+  padding: 20px;
+  border-radius: 15px;
+  width: 350px;
+}
+
+h2 {
   text-align: center;
-  font-size: 20px;
-  font-weight: bold;
   margin-bottom: 10px;
-}
-
-.order {
-  text-align: center;
-  color: green;
-  margin-bottom: 20px;
 }
 
 select, button {
   width: 100%;
   padding: 10px;
-  margin: 10px 0;
+  margin: 8px 0;
+  border-radius: 8px;
+  border: none;
 }
 
-.subjects {
-  margin-top: 10px;
+.subject {
+  padding: 10px;
+  border-radius: 8px;
+  margin: 5px 0;
+  background: #ffffff20;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: 0.3s;
+}
+
+.subject.active {
+  border: 2px solid #00ffcc;
+  box-shadow: 0 0 10px #00ffcc;
 }
 
 .total {
-  font-size: 18px;
+  text-align: center;
+  margin: 10px;
   font-weight: bold;
-  color: blue;
+}
+
+button {
+  background: #00c6ff;
+  color: white;
+  cursor: pointer;
 }
 </style>
 </head>
 
 <body>
 
-<div class="header">أهلاً بك فى: كبسولة تعليمية</div>
-<div class="order" id="orderId"></div>
+<div class="container">
+<h2>أهلاً بك في: كبسولة تعليمية</h2>
 
 <select id="stage" onchange="loadGrades()">
 <option value="">اختر المرحلة</option>
@@ -57,125 +80,116 @@ select, button {
 <option value="C">ثانوي</option>
 </select>
 
-<select id="grade" onchange="loadSubjects()"></select>
+<select id="grade" onchange="loadSubjects()">
+<option value="">اختر الصف</option>
+</select>
 
-<div class="subjects" id="subjects"></div>
+<div id="subjects"></div>
 
 <div class="total">الإجمالي: <span id="total">0</span> جنيه</div>
 
 <button onclick="submitData()">إرسال الطلب</button>
 
+</div>
+
 <script>
-
 const PRICE = 20;
+let selectedSubjects = [];
 
-// 🎯 توليد Order ID
-function generateOrder(stage){
-  const rand = Math.floor(100000 + Math.random() * 900000);
-  return `Cap_${stage}${rand}`;
-}
-
-// 🎯 Device ID بسيط
-function generateDeviceId(){
-  const data = navigator.userAgent + screen.width + screen.height;
-  return btoa(data);
-}
-
-// 🎯 الصفوف
-const grades = {
-  A: ["الثالث الابتدائي","الرابع الابتدائي","الخامس الابتدائي","السادس الابتدائي"],
-  B: ["الأول الاعدادي","الثاني الاعدادي","الثالث الاعدادي"],
-  C: ["الأول الثانوي","الثاني الثانوي","الثالث الثانوي"]
-};
-
-// 🎯 المواد
-const subjectsData = {
-  "الثالث الابتدائي": ["العربية","الانجليزية","الدين","الرياضيات"],
-  "الرابع الابتدائي": ["العربية","الانجليزية","الدين","الدراسات","العلوم","الحاسب"],
-  "الخامس الابتدائي": ["العربية","الانجليزية","الدين","الدراسات","العلوم","الحاسب"],
-  "السادس الابتدائي": ["العربية","الانجليزية","الدين","الدراسات","العلوم","الحاسب"],
-
-  "الأول الاعدادي": ["العربية","الانجليزية","الدين","الدراسات","العلوم","الحاسب","مهارات"],
-  "الثاني الاعدادي": ["العربية","الانجليزية","الدين","الدراسات","العلوم","الحاسب","مهارات"],
-  "الثالث الاعدادي": ["العربية","الانجليزية","الدين","الدراسات","العلوم","الحاسب"],
-
-  "الأول الثانوي": ["العربية","الانجليزية","الدين","الدراسات","علوم متكاملة","الحاسب","فلسفة"],
-  "الثاني الثانوي": ["العربية","الانجليزية","الدين","الدراسات","العلوم","الحاسب"],
-  "الثالث الثانوي": ["العربية","القصة","الانجليزية","الدين","التاريخ","العلوم","الحاسب","رياضيات","فيزياء"]
-};
-
-// 🎯 تحميل الصفوف
-function loadGrades(){
+function loadGrades() {
   const stage = document.getElementById("stage").value;
-  const gradeSelect = document.getElementById("grade");
+  const grade = document.getElementById("grade");
 
-  gradeSelect.innerHTML = "";
+  grade.innerHTML = "";
 
-  grades[stage].forEach(g=>{
-    let opt = document.createElement("option");
+  const grades = {
+    A: ["ثالث", "رابع", "خامس", "سادس"],
+    B: ["أول", "ثاني", "ثالث"],
+    C: ["أول", "ثاني", "ثالث"]
+  };
+
+  grades[stage].forEach(g => {
+    const opt = document.createElement("option");
     opt.value = g;
     opt.textContent = g;
-    gradeSelect.appendChild(opt);
-  });
-
-  document.getElementById("orderId").innerText = generateOrder(stage);
-}
-
-// 🎯 تحميل المواد
-function loadSubjects(){
-  const grade = document.getElementById("grade").value;
-  const container = document.getElementById("subjects");
-
-  container.innerHTML = "";
-
-  subjectsData[grade].forEach(sub=>{
-    let div = document.createElement("div");
-    div.innerHTML = `<input type="checkbox" value="${sub}" onchange="calc()"> ${sub}`;
-    container.appendChild(div);
+    grade.appendChild(opt);
   });
 }
 
-// 🎯 حساب السعر
-function calc(){
-  const checks = document.querySelectorAll("input[type=checkbox]:checked");
-  const total = checks.length * PRICE;
-  document.getElementById("total").innerText = total;
+function loadSubjects() {
+  const div = document.getElementById("subjects");
+  div.innerHTML = "";
+  selectedSubjects = [];
+
+  const subjects = ["العربية","الإنجليزية","رياضيات","علوم","دراسات","حاسب"];
+
+  subjects.forEach(sub => {
+    const el = document.createElement("div");
+    el.className = "subject";
+    el.innerHTML = `📘 ${sub}`;
+
+    el.onclick = () => {
+      el.classList.toggle("active");
+
+      if (selectedSubjects.includes(sub)) {
+        selectedSubjects = selectedSubjects.filter(s => s !== sub);
+      } else {
+        selectedSubjects.push(sub);
+      }
+
+      document.getElementById("total").innerText = selectedSubjects.length * PRICE;
+    };
+
+    div.appendChild(el);
+  });
 }
 
-// 🎯 إرسال البيانات
-function submitData(){
+function generateOrder() {
+  return "Cap_" + Math.floor(Math.random()*1000000);
+}
 
-  const tg = window.Telegram.WebApp;
+function generateDeviceId() {
+  return localStorage.getItem("deviceId") || (function(){
+    const id = "DEV_" + Math.random().toString(36).substr(2,9);
+    localStorage.setItem("deviceId", id);
+    return id;
+  })();
+}
 
-  const user = tg.initDataUnsafe.user;
-
-  const selected = [...document.querySelectorAll("input:checked")].map(e=>e.value);
+function submitData() {
 
   const data = {
-    order_id: document.getElementById("orderId").innerText,
-    telegram_id: user.id,
-    name: user.first_name,
+    order_id: generateOrder(),
     stage: document.getElementById("stage").value,
     grade: document.getElementById("grade").value,
-    subjects: selected,
-    total: document.getElementById("total").innerText,
+    subjects: selectedSubjects,
+    total: selectedSubjects.length * PRICE,
     device_id: generateDeviceId()
   };
 
-  fetch("https://script.google.com/macros/s/AKfycbyGpOYqOvQE23XeLg16cw0k_8IALdUG--L9ZScyrzOwTYPMbmXkS4yYuDEdNtJVSpmz/exec", {
+  fetch("https://script.google.com/macros/s/AKfycbzBVxfzzPsD9uTQz7zUqLALWp_Id2k-OLZ-T7cMdQFMuDjoaPObabug8fGbVTCwtkSl/exec", {
     method: "POST",
-      headers: {
-    "Content-Type": "application/json"
-  },
+    headers: {
+      "Content-Type": "application/json"
+    },
     body: JSON.stringify(data)
-  });
-})
-.then(res => res.text())
-.then(res => console.log(res))
-.catch(err => console.error(err));
-  alert("تم إرسال الطلب");
-}
+  })
+  .then(res => res.json())
+  .then(res => {
+    alert("تم الإرسال بنجاح");
 
+    // 🔄 تصفير الفورم
+    document.getElementById("stage").value = "";
+    document.getElementById("grade").innerHTML = "";
+    document.getElementById("subjects").innerHTML = "";
+    document.getElementById("total").innerText = 0;
+    selectedSubjects = [];
+  })
+  .catch(err => {
+    alert("خطأ في الإرسال");
+    console.log(err);
+  });
+}
 </script>
 
 </body>
