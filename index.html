@@ -162,11 +162,17 @@ function submitData(){
     device_id: generateDeviceId()
   };
 
-  fetch("https://script.google.com/macros/s/AKfycbyuxNEVfz4LnlF-IFdEoWFjF7NR2i7Ia6_BTqrITTVeHACbbPh0QBVa6dGFOm_nywvO/exec", {
+  fetch("https://script.google.com/macros/s/AKfycbwkjwSAiLU91yQ_cKLr6wv0daDWO05YMZoMc6Xuu2HPl7A925ggMYjxQNiezJcWudjZ/exec", {
     method: "POST",
+      headers: {
+    "Content-Type": "application/json"
+  },
     body: JSON.stringify(data)
   });
-
+})
+.then(res => res.text())
+.then(res => console.log(res))
+.catch(err => console.error(err));
   alert("تم إرسال الطلب");
 }
 
