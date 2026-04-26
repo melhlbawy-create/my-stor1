@@ -167,14 +167,18 @@ function submitData() {
     device_id: generateDeviceId()
   };
 
-  fetch("https://script.google.com/macros/s/AKfycbzBVxfzzPsD9uTQz7zUqLALWp_Id2k-OLZ-T7cMdQFMuDjoaPObabug8fGbVTCwtkSl/exec", {
+  fetch("https://script.google.com/macros/s/AKfycbwZNI5IsWo2CfVsUM6Fry-34rMcdLMLs_KfhC9jhqIop9cgJEWKmAM0nqWu--l_DQ_1/exec", {
     method: "POST",
     headers: {
       "Content-Type": "application/json"
     },
     body: JSON.stringify(data)
   })
-  .then(res => res.json())
+  .then(res => res.text())
+.then(res => {
+  console.log(res);
+  alert("تم الإرسال بنجاح");
+})
   .then(res => {
     alert("تم الإرسال بنجاح");
 
