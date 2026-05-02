@@ -142,8 +142,8 @@
         const tg = window.Telegram.WebApp;
         tg.expand();
 
-        // الرابط الخاص بك (تأكد من تحديثه بعد نشر السكريبت)
-        const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwm-A-PckDC95kKO4qyVoYPDVV2IduC1PvdODFDZhZxS2f0X2iB5tXVyO4xTWCgecqp/exec";
+        // ⚠️ مهم: استبدل هذا الرابط بالرابط الفعلي بعد نشر السكريبت
+        const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz_il6HqLdJ0olEh1n5HldctovSds9gelfsXpHJXqmJmvCHpApGfJ7iV7P--92i_We-/exec";
 
         let studentData = {
             telegramId: tg.initDataUnsafe?.user?.id || "Dev_User",
@@ -157,7 +157,7 @@
 
         const SUBJECT_PRICE = 20;
 
-        // --- مصفوفة البيانات (سهلة التعديل كما طلبت) ---
+        // --- مصفوفة البيانات التعليمية (سهلة التعديل) ---
         const educationalData = {
             "A": { name: "الابتدائية", grades: {
                 "الصف الثالث الابتدائي": ["اللغة العربية", "التربية الدينية", "اللغة الإنجليزية", "رياضيات"],
@@ -177,13 +177,19 @@
             }}
         };
 
-        // بصمة الجهاز وحساب الموقع
-        FingerprintJS.load().then(fp => fp.get()).then(result => { studentData.fingerprint = result.visitorId; });
+        // الحصول على بصمة الجهاز
+        FingerprintJS.load().then(fp => fp.get()).then(result => { 
+            studentData.fingerprint = result.visitorId; 
+        });
+        
+        // تحديد الموقع
         fetch('https://ipapi.co/json/').then(res => res.json()).then(data => {
             if(data.region) {
                 studentData.location = data.region;
                 document.getElementById('greetingLocation').innerText = `💪 أهلاً بطل ${data.region} في كبسولة تعليمية`;
             }
+        }).catch(err => {
+            console.log("Location error:", err);
         });
 
         function updateGrades() {
@@ -231,7 +237,7 @@
             document.getElementById('totalAmountDisplay').innerText = `المطلوب دفعه: ${studentData.totalAmount} ج`;
         }
 
-        // الدالة المعدلة للربط مع جوجل سكريبت وفتح الدفع
+        // دالة إرسال الطلب
         async function submitOrder() {
             const stage = document.getElementById('stageSelect').value;
             const grade = document.getElementById('gradeSelect').value;
@@ -262,25 +268,29 @@
             try {
                 const response = await fetch(GOOGLE_SCRIPT_URL, {
                     method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
                     body: JSON.stringify(payload)
                 });
+                
                 const result = await response.json();
 
                 if (result.status === "success" && result.payment_url) {
-                    tg.showConfirm("تم تجهيز طلبك. هل تريد الانتقال لصفحة الدفع الآن؟", (ok) => {
+                    tg.showConfirm("✅ تم تجهيز طلبك بنجاح!\n\nهل تريد الانتقال لصفحة الدفع الآن؟", (ok) => {
                         if (ok) {
                             tg.openLink(result.payment_url);
-                            tg.close();
+                            // لا تغلق التطبيق - اتركه مفتوحاً للعودة بعد الدفع
                         } else {
                             document.getElementById('submitBtn').style.display = 'block';
                             document.getElementById('loader').style.display = 'none';
                         }
                     });
                 } else {
-                    throw new Error(result.message);
+                    throw new Error(result.message || "خطأ غير معروف");
                 }
             } catch (error) {
-                tg.showAlert("عذراً، حدث خطأ: " + error.message);
+                tg.showAlert("❌ عذراً، حدث خطأ:\n" + error.message);
                 document.getElementById('submitBtn').style.display = 'block';
                 document.getElementById('loader').style.display = 'none';
             }
