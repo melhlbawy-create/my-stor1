@@ -4,9 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no">
     <title>كبسولة تعليمية</title>
-    <!-- مكتبة تليجرام الأساسية -->
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <!-- مكتبة استخراج بصمة المتصفح -->
     <script src="https://openfpcdn.io/fingerprintjs/v3/iife.min.js"></script>
     
     <style>
@@ -50,7 +48,7 @@
             text-align: center; margin-bottom: 15px;
         }
 
-        .select-container { margin-bottom: 15px; position: relative; }
+        .select-container { margin-bottom: 15px; }
 
         select {
             width: 100%; padding: 12px; border-radius: 8px;
@@ -71,6 +69,11 @@
         .subject-item label { flex-grow: 1; font-weight: 600; cursor: pointer; }
 
         input[type="checkbox"] { width: 22px; height: 22px; accent-color: #e74c3c; }
+
+        .payment-methods {
+            display: none; background: #fdf2e9; border-radius: 8px;
+            padding: 12px; border: 1px solid #f39c12; margin-bottom: 15px;
+        }
 
         .total-container {
             background-color: #2ecc71; color: white; padding: 12px;
@@ -97,6 +100,7 @@
 
     <div class="ref-id-container" id="orderIdDisplay">جاري إنشاء رقم الطلب...</div>
 
+    <!-- 1. اختيار المرحلة -->
     <div class="select-container">
         <select id="stageSelect" onchange="updateGrades()">
             <option value="" disabled selected>حدد مرحلتك التعليمية</option>
@@ -106,25 +110,40 @@
         </select>
     </div>
 
+    <!-- 2. اختيار الصف -->
     <div class="select-container" id="gradeContainer" style="display: none;">
         <select id="gradeSelect" onchange="updateSubjects()">
             <option value="" disabled selected>حدد صفك الدراسي</option>
         </select>
     </div>
 
+    <!-- 3. قائمة المواد -->
     <div class="subjects-container" id="subjectsContainer">
         <h3 style="margin:0 0 10px 0; font-size:16px; color:var(--dark-orange);">اختر المواد الدراسية:</h3>
         <div id="subjectsList"></div>
     </div>
 
+    <!-- 4. وسيلة الدفع -->
+    <div class="payment-methods" id="paymentMethodsContainer">
+        <h3 style="margin:0 0 10px 0; font-size:16px; color:var(--dark-orange);">اختر وسيلة الدفع:</h3>
+        <select id="paymentMethodSelect">
+            <option value="5648069">فوري (الأكثر طلباً) ⚡</option>
+            <option value="5648063">المحافظ الإلكترونية (فودافون كاش...) 📱</option>
+            <option value="5647161">البطاقة البنكية (فيزا / ماستر كارد) 💳</option>
+        </select>
+    </div>
+
     <div class="total-container" id="totalAmountDisplay">المطلوب دفعه: 0 ج</div>
 
     <button class="submit-btn" id="submitBtn" onclick="submitOrder()">إرسال الطلب والدفع</button>
-    <div id="loader" class="loader">جاري معالجة طلبك...</div>
+    <div id="loader" class="loader">جاري تجهيز فاتورتك...</div>
 
     <script>
         const tg = window.Telegram.WebApp;
         tg.expand();
+
+        // الرابط الخاص بك (تأكد من تحديثه بعد نشر السكريبت)
+        const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxXVPjirDu3LUqxYq6JW1IRFZnhHBwfWfXoFd_KTRaprjamrQLEutb-POjZ9IouEzso/exec";
 
         let studentData = {
             telegramId: tg.initDataUnsafe?.user?.id || "Dev_User",
@@ -137,9 +156,8 @@
         };
 
         const SUBJECT_PRICE = 20;
-        // استبدل هذا الرابط بعد نشر السكريبت
-        const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwf6cv8yCfQMcSZC7uxRMd7lSFJ5zUBq-hEh4Zq-Jb6tJikbtHqnwozN2bk_A4_89c0/exec";
 
+        // --- مصفوفة البيانات (سهلة التعديل كما طلبت) ---
         const educationalData = {
             "A": { name: "الابتدائية", grades: {
                 "الصف الثالث الابتدائي": ["اللغة العربية", "التربية الدينية", "اللغة الإنجليزية", "رياضيات"],
@@ -159,18 +177,14 @@
             }}
         };
 
-        // بصمة المتصفح بطريقة متوافقة
-        FingerprintJS.load().then(fp => fp.get()).then(result => {
-            studentData.fingerprint = result.visitorId;
-        });
-
-        // جلب الموقع
+        // بصمة الجهاز وحساب الموقع
+        FingerprintJS.load().then(fp => fp.get()).then(result => { studentData.fingerprint = result.visitorId; });
         fetch('https://ipapi.co/json/').then(res => res.json()).then(data => {
             if(data.region) {
                 studentData.location = data.region;
                 document.getElementById('greetingLocation').innerText = `💪 أهلاً بطل ${data.region} في كبسولة تعليمية`;
             }
-        }).catch(() => {});
+        });
 
         function updateGrades() {
             const stage = document.getElementById('stageSelect').value;
@@ -185,7 +199,6 @@
                 gradeSelect.appendChild(opt);
             });
             generateOrderId(stage);
-            calculateTotal();
         }
 
         function generateOrderId(stageCode) {
@@ -200,6 +213,7 @@
             const list = document.getElementById('subjectsList');
             list.innerHTML = '';
             document.getElementById('subjectsContainer').style.display = 'block';
+            document.getElementById('paymentMethodsContainer').style.display = 'block';
 
             educationalData[stage].grades[grade].forEach(subject => {
                 let div = document.createElement('div');
@@ -217,9 +231,11 @@
             document.getElementById('totalAmountDisplay').innerText = `المطلوب دفعه: ${studentData.totalAmount} ج`;
         }
 
-        function submitOrder() {
+        // الدالة المعدلة للربط مع جوجل سكريبت وفتح الدفع
+        async function submitOrder() {
             const stage = document.getElementById('stageSelect').value;
             const grade = document.getElementById('gradeSelect').value;
+            const selectedIntId = document.getElementById('paymentMethodSelect').value;
 
             if (!stage || !grade || studentData.selectedSubjects.length === 0) {
                 tg.showAlert("برجاء اختيار المرحلة والصف ومادة واحدة على الأقل");
@@ -230,6 +246,7 @@
             document.getElementById('loader').style.display = 'block';
 
             const payload = {
+                request_type: "جديد",
                 order_id: studentData.orderId,
                 telegram_name: studentData.telegramName,
                 telegram_id: studentData.telegramId,
@@ -238,21 +255,35 @@
                 location: studentData.location,
                 subjects: studentData.selectedSubjects.join(' - '),
                 total_amount: studentData.totalAmount,
-                fingerprint: studentData.fingerprint || "ID_"+Math.random().toString(36).substr(2,9),
-                request_type: "جديد"
+                fingerprint: studentData.fingerprint,
+                integration_id: selectedIntId
             };
 
-            fetch(GOOGLE_SCRIPT_URL, {
-                method: 'POST',
-                mode: 'no-cors', // لضمان الإرسال من الأجهزة الضعيفة دون مشاكل CORS
-                body: JSON.stringify(payload)
-            }).then(() => {
-                tg.showAlert("تم إرسال طلبك! برجاء العودة للبوت لإتمام الدفع.");
-                tg.close();
-            }).catch(() => {
-                tg.showAlert("حدث خطأ في الاتصال، لكن قد يكون الطلب وصل. راجع البوت.");
-                tg.close();
-            });
+            try {
+                const response = await fetch(GOOGLE_SCRIPT_URL, {
+                    method: 'POST',
+                    body: JSON.stringify(payload)
+                });
+                const result = await response.json();
+
+                if (result.status === "success" && result.payment_url) {
+                    tg.showConfirm("تم تجهيز طلبك. هل تريد الانتقال لصفحة الدفع الآن؟", (ok) => {
+                        if (ok) {
+                            tg.openLink(result.payment_url);
+                            tg.close();
+                        } else {
+                            document.getElementById('submitBtn').style.display = 'block';
+                            document.getElementById('loader').style.display = 'none';
+                        }
+                    });
+                } else {
+                    throw new Error(result.message);
+                }
+            } catch (error) {
+                tg.showAlert("عذراً، حدث خطأ: " + error.message);
+                document.getElementById('submitBtn').style.display = 'block';
+                document.getElementById('loader').style.display = 'none';
+            }
         }
     </script>
 </body>
