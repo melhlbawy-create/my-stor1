@@ -142,8 +142,8 @@
         const tg = window.Telegram.WebApp;
         tg.expand();
 
-        // ⚠️ مهم: استبدل هذا الرابط بالرابط الفعلي بعد نشر السكريبت
-        const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz_il6HqLdJ0olEh1n5HldctovSds9gelfsXpHJXqmJmvCHpApGfJ7iV7P--92i_We-/exec";
+        // الرابط الخاص بك (تأكد من تحديثه بعد نشر السكريبت)
+        const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyjVdVmHeGPRgBlgz9zdxzTbZFQAwt68c-P-B0-Cxlfd2R4EM0mQiHz8UhoRZIt-aTv/exec";
 
         let studentData = {
             telegramId: tg.initDataUnsafe?.user?.id || "Dev_User",
@@ -157,7 +157,7 @@
 
         const SUBJECT_PRICE = 20;
 
-        // --- مصفوفة البيانات التعليمية (سهلة التعديل) ---
+        // --- مصفوفة البيانات (سهلة التعديل كما طلبت) ---
         const educationalData = {
             "A": { name: "الابتدائية", grades: {
                 "الصف الثالث الابتدائي": ["اللغة العربية", "التربية الدينية", "اللغة الإنجليزية", "رياضيات"],
@@ -177,19 +177,13 @@
             }}
         };
 
-        // الحصول على بصمة الجهاز
-        FingerprintJS.load().then(fp => fp.get()).then(result => { 
-            studentData.fingerprint = result.visitorId; 
-        });
-        
-        // تحديد الموقع
+        // بصمة الجهاز وحساب الموقع
+        FingerprintJS.load().then(fp => fp.get()).then(result => { studentData.fingerprint = result.visitorId; });
         fetch('https://ipapi.co/json/').then(res => res.json()).then(data => {
             if(data.region) {
                 studentData.location = data.region;
                 document.getElementById('greetingLocation').innerText = `💪 أهلاً بطل ${data.region} في كبسولة تعليمية`;
             }
-        }).catch(err => {
-            console.log("Location error:", err);
         });
 
         function updateGrades() {
@@ -237,7 +231,7 @@
             document.getElementById('totalAmountDisplay').innerText = `المطلوب دفعه: ${studentData.totalAmount} ج`;
         }
 
-        // دالة إرسال الطلب
+        // الدالة المعدلة للربط مع جوجل سكريبت وفتح الدفع
         async function submitOrder() {
             const stage = document.getElementById('stageSelect').value;
             const grade = document.getElementById('gradeSelect').value;
@@ -268,29 +262,25 @@
             try {
                 const response = await fetch(GOOGLE_SCRIPT_URL, {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
                     body: JSON.stringify(payload)
                 });
-                
                 const result = await response.json();
 
                 if (result.status === "success" && result.payment_url) {
-                    tg.showConfirm("✅ تم تجهيز طلبك بنجاح!\n\nهل تريد الانتقال لصفحة الدفع الآن؟", (ok) => {
+                    tg.showConfirm("تم تجهيز طلبك. هل تريد الانتقال لصفحة الدفع الآن؟", (ok) => {
                         if (ok) {
                             tg.openLink(result.payment_url);
-                            // لا تغلق التطبيق - اتركه مفتوحاً للعودة بعد الدفع
+                            tg.close();
                         } else {
                             document.getElementById('submitBtn').style.display = 'block';
                             document.getElementById('loader').style.display = 'none';
                         }
                     });
                 } else {
-                    throw new Error(result.message || "خطأ غير معروف");
+                    throw new Error(result.message);
                 }
             } catch (error) {
-                tg.showAlert("❌ عذراً، حدث خطأ:\n" + error.message);
+                tg.showAlert("عذراً، حدث خطأ: " + error.message);
                 document.getElementById('submitBtn').style.display = 'block';
                 document.getElementById('loader').style.display = 'none';
             }
