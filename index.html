@@ -49,7 +49,7 @@
     <div class="payment-methods" id="paymentMethodsContainer">
         <h3 style="margin:0 0 10px 0; font-size:16px; color:var(--dark-orange);">اختر وسيلة الدفع:</h3>
         <select id="paymentMethodSelect">
-            <!-- تأكد أن هذه الأرقام مطابقة للـ Integration ID في حسابك -->
+            <!-- التأكد من مطابقة الأرقام للـ Integration IDs في حساب بايموب الخاص بك -->
             <option value="5648069">فوري (الأكثر طلباً) ⚡</option>
             <option value="5648063">المحافظ الإلكترونية (فودافون كاش...) 📱</option>
             <option value="5647161">البطاقة البنكية (فيزا / ماستر كارد) 💳</option>
@@ -64,8 +64,8 @@
         const tg = window.Telegram.WebApp;
         tg.expand();
 
-        // رابط جوجل سكريبت (تأكد من إعادة نشره بعد التعديل)
-        const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwJ7zgeJ2Rqhq1SM33rhcEizAAznJ5jwPNko45MEhOx_NYO8jG-hea_e7QU6KxN5Cib/exec";
+        // رابط جوجل سكريبت (تأكد من إعادة النشر 'Deploy' بعد كل تعديل في السكريبت)
+        const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbweAj_7cxXaagvrKq3g_y4pBlJSDrz7V6utQuMxnm3Nwmr4GO2Tu7DLsZnKaOeaajXu/exec";
 
         let studentData = {
             telegramId: tg.initDataUnsafe?.user?.id || "Dev_User",
@@ -151,28 +151,35 @@
                 grade: grade,
                 location: studentData.location,
                 subjects: studentData.selectedSubjects.join(' - '),
-                total_amount: studentData.totalAmount,
+                total_amount: studentData.totalAmount, // السكريبت سيتولى تحويله لقروش
                 fingerprint: studentData.fingerprint,
                 integration_id: selectedIntId
             };
 
             try {
+                // إرسال البيانات إلى سكريبت جوجل
                 const response = await fetch(GOOGLE_SCRIPT_URL, {
                     method: 'POST',
                     body: JSON.stringify(payload)
                 });
+                
                 const result = await response.json();
 
                 if (result.status === "success" && result.payment_url) {
-                    tg.showConfirm("تم تجهيز طلبك بنجاح. هل تريد الدفع الآن؟", (ok) => {
-                        if (ok) { tg.openLink(result.payment_url); tg.close(); }
-                        else { document.getElementById('submitBtn').style.display = 'block'; document.getElementById('loader').style.display = 'none'; }
+                    tg.showConfirm(`القيمة المطلوبة: ${studentData.totalAmount} ج. هل تريد الانتقال لصفحة الدفع الآن؟`, (ok) => {
+                        if (ok) { 
+                            tg.openLink(result.payment_url); 
+                            tg.close(); 
+                        } else { 
+                            document.getElementById('submitBtn').style.display = 'block'; 
+                            document.getElementById('loader').style.display = 'none'; 
+                        }
                     });
                 } else {
-                    throw new Error(result.message);
+                    throw new Error(result.message || "فشل إنشاء رابط الدفع");
                 }
             } catch (error) {
-                tg.showAlert("حدث خطأ: " + error.message);
+                tg.showAlert("عذراً، حدث خطأ أثناء الاتصال بالخادم: " + error.message);
                 document.getElementById('submitBtn').style.display = 'block';
                 document.getElementById('loader').style.display = 'none';
             }
